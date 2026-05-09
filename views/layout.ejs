@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="bg-gray-50 text-gray-900 font-sans">
+    
+    <!-- Navigation -->
+    <nav class="bg-green-600 text-white shadow-md">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="/" class="text-2xl font-bold flex items-center gap-2">
+                <span>🌱</span> Eco-Pulse
+            </a>
+            <div class="space-x-6">
+                <a href="#" class="hover:underline">Dashboard</a>
+                <a href="#" class="hover:underline">Leaderboard</a>
+                <a href="#" class="hover:underline">Rewards</a>
+                <a href="#" class="bg-white text-green-600 px-4 py-2 rounded-full font-semibold hover:bg-green-50 transition">Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-10">
+        <%- body %>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-gray-300 py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2026 Eco-Pulse Community. Built with 💚 for the planet.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
