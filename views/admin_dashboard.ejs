@@ -1,0 +1,68 @@
+<div class="flex justify-between items-center mb-10">
+    <h1 class="text-4xl font-bold">Admin Community Panel</h1>
+    <div class="bg-gray-800 text-white px-6 py-2 rounded-full">
+        <span>Pengurus Mode</span>
+    </div>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-gray-50 border-b border-gray-100">
+            <tr>
+                <th class="px-6 py-4 font-bold text-gray-600">Citizen</th>
+                <th class="px-6 py-4 font-bold text-gray-600">Waste Info</th>
+                <th class="px-6 py-4 font-bold text-gray-600">Proof</th>
+                <th class="px-6 py-4 font-bold text-gray-600">Current Status</th>
+                <th class="px-6 py-4 font-bold text-gray-600">Action</th>
+            </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+            <% if (logs && logs.length > 0) { %>
+                <% logs.forEach(log => { %>
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">
+                            <p class="font-bold"><%= log.username %></p>
+                            <p class="text-sm text-gray-500">RT <%= log.rt %> / RW <%= log.rw %></p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="capitalize font-semibold"><%= log.waste_type %></p>
+                            <p class="text-sm"><%= log.weight %> kg</p>
+                            <p class="text-xs text-green-600">+<%= log.points_earned %> pts</p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <% if (log.photo_url) { %>
+                                <a href="<%= log.photo_url %>" target="_blank">
+                                    <img src="<%= log.photo_url %>" class="w-16 h-16 object-cover rounded-lg border">
+                                </a>
+                            <% } else { %>
+                                <span class="text-gray-400">No Photo</span>
+                            <% } %>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-bold capitalize 
+                                <%= log.status === 'verified' ? 'bg-green-100 text-green-700' : 
+                                   log.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
+                                <%= log.status %>
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-2">
+                                <form action="/admin/verify/<%= log.id %>" method="POST" class="flex gap-2">
+                                    <button name="status" value="verified" class="bg-green-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-green-700 w-full">Verify</button>
+                                    <button name="status" value="rejected" class="bg-red-600 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-red-700 w-full">Reject</button>
+                                </form>
+                                <form action="/admin/delete/<%= log.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this log?')">
+                                    <button type="submit" class="bg-gray-400 text-white px-3 py-1 rounded-lg text-xs font-bold hover:bg-gray-500 w-full">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                <% }) %>
+            <% } else { %>
+                <tr>
+                    <td colspan="5" class="px-6 py-10 text-center text-gray-500 italic">No waste logs to review.</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>

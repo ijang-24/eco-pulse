@@ -5,9 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans">
+    
+    <!-- Notification Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const successMsg = '<%= typeof success_msg !== "undefined" ? success_msg : "" %>';
+            const errorMsg = '<%= typeof error_msg !== "undefined" ? error_msg : "" %>';
+
+            if (successMsg) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success!',
+                    text: successMsg,
+                    timer: 3000,
+                    showConfirmButton: false
+                });
+            }
+
+            if (errorMsg) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: errorMsg
+                });
+            }
+        });
+    </script>
     
     <!-- Navigation -->
     <nav class="bg-green-600 text-white shadow-md">
@@ -20,6 +47,9 @@
                 <a href="/leaderboard" class="hover:underline">Leaderboard</a>
                 <a href="/rewards" class="hover:underline">Rewards</a>
                 <% if (user) { %>
+                    <% if (user.role === 'admin') { %>
+                        <a href="/admin/dashboard" class="text-yellow-300 font-bold hover:underline">Admin Panel</a>
+                    <% } %>
                     <span class="text-green-200">Hello, <%= user.username %>!</span>
                     <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-600 transition">Logout</a>
                 <% } else { %>
