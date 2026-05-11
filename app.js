@@ -426,9 +426,6 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
             },
             logs: flattenedLogs,
             isAdminArea: true
-        });
-    } catch (err) {
-        console.error("Admin Dashboard Error:", err);
         req.flash("error_msg", "Gagal memuat dashboard admin.");
         res.redirect("/dashboard");
     }
@@ -494,8 +491,9 @@ app.get("/admin/rewards", isAdmin, async (req, res) => {
     }
 });
 
-app.post("/admin/rewards/add", isAdmin, async (req, res) => {
-    const { title, description, points_cost, stock, image_url } = req.body;
+app.post("/admin/rewards/add", isAdmin, upload.single("image"), async (req, res) => {
+    const { title, description, points_cost, stock } = req.body;
+    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
     try {
         await prisma.rewards.create({
             data: {
@@ -515,6 +513,31 @@ app.post("/admin/rewards/add", isAdmin, async (req, res) => {
     }
 });
 
+app.post("/admin/rewards/edit/:id", isAdmin, upload.single("image"), async (req, res) => {
+    const { title, description, points_cost, stock } = req.body;
+    const id = parseInt(req.params.id);
+    try {
+        const data = {
+            title,
+            description,
+            points_cost: parseInt(points_cost),
+            stock: parseInt(stock)
+        };
+        if (req.file) data.image_url = `/uploads/${req.file.filename}`;
+
+        await prisma.rewards.update({
+            where: { id },
+            data
+        });
+        req.flash("success_msg", "Reward berhasil diperbarui!");
+        res.redirect("/admin/rewards");
+    } catch (err) {
+        console.error("Edit Reward Error:", err);
+        req.flash("error_msg", "Gagal memperbarui reward.");
+        res.redirect("/admin/rewards");
+    }
+});
+
 app.post("/admin/rewards/delete/:id", isAdmin, async (req, res) => {
     try {
         await prisma.rewards.delete({
@@ -528,8 +551,7 @@ app.post("/admin/rewards/delete/:id", isAdmin, async (req, res) => {
         res.redirect("/admin/rewards");
     }
 });
-
-app.post('/admin/delete/:id', isAdmin, async (req, res) => {
+app.post("/admin/delete/:id", isAdmin, async (req, res) => {
     try {
         await prisma.waste_logs.delete({
             where: { id: parseInt(req.params.id) }
