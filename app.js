@@ -3,6 +3,7 @@ require('dotenv').config({ path: path.join(__dirname, '.env'), override: true })
 const express = require('express');
 const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const flash = require('connect-flash');
 const multer = require('multer');
 const prisma = require('./src/utils/prisma');
@@ -52,9 +53,15 @@ app.use(express.static('public'));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(session({
+    store: new pgSession({
+        conString: process.env.DATABASE_URL
+    }),
     secret: 'eco-pulse-secret',
     resave: false,
-    saveUninitialized: true
+    saveUninitialized: false,
+    cookie: { 
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
 }));
 app.use(flash());
 
@@ -106,7 +113,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             take: 5
         });
 
-        const aggregatePoints = await prisma.waste_logs.aggregate({
+        const aggregateEarned = await prisma.waste_logs.aggregate({
             where: { 
                 user_id: req.session.user.id,
                 status: 'verified'
@@ -116,20 +123,38 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             }
         });
 
-        const totalPoints = aggregatePoints._sum.points_earned || 0;
+        const redemptions = await prisma.redemptions.findMany({
+            where: { user_id: req.session.user.id },
+            include: { reward: true }
+        });
 
-        if (user && Number(user.total_points || 0) !== Number(totalPoints)) {
+        const totalEarned = aggregateEarned._sum.points_earned || 0;
+        const totalSpent = redemptions.reduce((sum, r) => sum + r.reward.points_cost, 0);
+        const correctPoints = totalEarned - totalSpent;
+
+        if (user && Number(user.total_points || 0) !== Number(correctPoints)) {
             await prisma.users.update({
                 where: { id: req.session.user.id },
-                data: { total_points: totalPoints }
+                data: { total_points: correctPoints }
             });
-            user.total_points = totalPoints;
+            user.total_points = correctPoints;
         }
 
-        // Calculate impact based on logs (mock logic if point_configs not joined)
+        const configs = await prisma.point_configs.findMany();
+        const verifiedLogs = await prisma.waste_logs.findMany({
+            where: { user_id: req.session.user.id, status: 'verified' }
+        });
+
         let totalCO2 = 0;
         let totalTrees = 0;
-        // Ideally we join with point_configs, but for now we'll use 0 or fetch configs
+
+        verifiedLogs.forEach(log => {
+            const config = configs.find(c => c.waste_type === log.waste_type);
+            if (config) {
+                totalCO2 += Number(log.weight) * Number(config.co2_factor);
+                totalTrees += Number(log.weight) * Number(config.tree_factor);
+            }
+        });
         
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
@@ -217,6 +242,20 @@ app.get('/rewards', isAuthenticated, async (req, res) => {
     }
 });
 
+app.get('/my-vouchers', isAuthenticated, async (req, res) => {
+    try {
+        const redemptions = await prisma.redemptions.findMany({
+            where: { user_id: req.session.user.id },
+            include: { reward: true },
+            orderBy: { redeemed_at: 'desc' }
+        });
+        res.render('my_vouchers', { title: 'My Vouchers | Eco-Pulse', redemptions });
+    } catch (err) {
+        console.error('Vouchers Error:', err);
+        res.redirect('/dashboard');
+    }
+});
+
 app.post('/rewards/redeem/:id', isAuthenticated, async (req, res) => {
     try {
         const rewardId = parseInt(req.params.id);
@@ -229,8 +268,15 @@ app.post('/rewards/redeem/:id', isAuthenticated, async (req, res) => {
             if (!reward || reward.stock <= 0) throw new Error('Reward out of stock');
             if (user.total_points < reward.points_cost) throw new Error('Insufficient points');
 
+            const voucherCode = 'EP-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+
             await tx.redemptions.create({
-                data: { user_id: userId, reward_id: rewardId, status: 'completed' }
+                data: { 
+                    user_id: userId, 
+                    reward_id: rewardId, 
+                    status: 'completed',
+                    voucher_code: voucherCode
+                }
             });
 
             await tx.users.update({
@@ -426,6 +472,9 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
             },
             logs: flattenedLogs,
             isAdminArea: true
+        });
+    } catch (err) {
+        console.error("Admin Dashboard Error:", err);
         req.flash("error_msg", "Gagal memuat dashboard admin.");
         res.redirect("/dashboard");
     }

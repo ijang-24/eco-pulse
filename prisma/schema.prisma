@@ -8,6 +8,12 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+model session {
+  sid    String   @id @db.VarChar
+  sess   Json     @db.Json
+  expire DateTime @db.Timestamp(6)
+}
+
 model users {
   id           Int           @id @default(autoincrement())
   username     String        @db.VarChar(50)
@@ -18,8 +24,8 @@ model users {
   role         String        @default("citizen") @db.VarChar(20)
   total_points Int           @default(0)
   created_at   DateTime      @default(now()) @db.Timestamp(6)
-  waste_logs   waste_logs[]
   redemptions  redemptions[]
+  waste_logs   waste_logs[]
 }
 
 model waste_logs {
@@ -46,7 +52,7 @@ model point_configs {
 model rewards {
   id          Int           @id @default(autoincrement())
   title       String        @db.VarChar(100)
-  description String?       @db.Text
+  description String?
   points_cost Int
   stock       Int           @default(0)
   image_url   String?       @db.VarChar(255)
@@ -55,11 +61,12 @@ model rewards {
 }
 
 model redemptions {
-  id          Int      @id @default(autoincrement())
-  user_id     Int
-  reward_id   Int
-  redeemed_at DateTime @default(now())
-  status      String   @default("pending") @db.VarChar(20)
-  user        users    @relation(fields: [user_id], references: [id])
-  reward      rewards  @relation(fields: [reward_id], references: [id])
+  id           Int      @id @default(autoincrement())
+  user_id      Int
+  reward_id    Int
+  redeemed_at  DateTime @default(now())
+  status       String   @default("pending") @db.VarChar(20)
+  voucher_code String?  @unique @db.VarChar(50)
+  reward       rewards  @relation(fields: [reward_id], references: [id])
+  user         users    @relation(fields: [user_id], references: [id])
 }

@@ -1,0 +1,115 @@
+<section class="space-y-12">
+    <!-- Vouchers Header -->
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-600 via-emerald-500 to-lime-400 p-8 text-white shadow-[0_20px_50px_rgba(34,197,94,0.15)] lg:p-12">
+        <div class="absolute -right-10 top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+            <div>
+                <p class="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30">My Collection</p>
+                <h1 class="mt-4 text-4xl font-extrabold tracking-tight lg:text-5xl">Voucher <span class="text-lime-200">Saya</span></h1>
+                <p class="mt-2 text-emerald-50/90 font-medium">Daftar reward yang telah Anda tukarkan. Gunakan kode di bawah untuk klaim.</p>
+            </div>
+            <div class="flex items-center gap-4 rounded-[2rem] bg-white px-8 py-4 shadow-xl shadow-emerald-900/10 ring-1 ring-emerald-200 text-slate-900">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-600">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3" />
+                        <path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3" />
+                        <path d="M4 12H2" />
+                        <path d="M10 12H8" />
+                        <path d="M16 12h-2" />
+                        <path d="M22 12h-2" />
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Total Voucher</p>
+                    <p class="text-3xl font-black text-slate-950 tracking-tighter"><%= redemptions.length %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Vouchers Section -->
+    <div class="mt-16">
+        <% if (redemptions && redemptions.length > 0) { %>
+            <div class="grid gap-6 md:grid-cols-2">
+                <% redemptions.forEach(redemption => { %>
+                    <div class="group relative overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm transition hover:shadow-xl hover:border-indigo-100 flex items-center gap-6">
+                        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-3xl group-hover:scale-110 transition">
+                            🎁
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-900 text-lg"><%= redemption.reward.title %></h4>
+                            <p class="text-xs text-slate-500 mt-1 italic">Ditukar pada: <%= new Date(redemption.redeemed_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+                            <div class="mt-4 flex flex-col gap-2">
+                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Kode Voucher:</span>
+                                <div class="relative inline-flex items-center justify-between gap-2 rounded-xl bg-slate-950 px-4 py-3 text-white">
+                                    <code class="text-sm font-black tracking-[0.2em] text-amber-400"><%= redemption.voucher_code || 'N/A' %></code>
+                                    <button onclick="copyToClipboard('<%= redemption.voucher_code %>')" class="relative z-10 p-1 text-slate-400 hover:text-white transition cursor-pointer active:scale-90" title="Copy Code">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-indigo-50/50 group-hover:scale-150 transition duration-500"></div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } else { %>
+            <div class="rounded-[3rem] border-2 border-dashed border-slate-100 p-20 text-center bg-white/50 backdrop-blur-sm">
+                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-slate-50 text-slate-300 mb-6">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.642.257a6 6 0 01-3.86.517l-2.387-.477a2 2 0 00-1.022.547l-1.168 1.168a2 2 0 00.556 3.212 9.035 9.035 0 008.32 0 2 2 0 00.556-3.212l-1.168-1.168zM12 9V4m0 0L9 7m3-3l3 3" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-extrabold text-slate-900">Belum ada Voucher</h3>
+                <p class="mt-2 text-slate-500 max-w-xs mx-auto">Anda belum menukarkan poin dengan reward apapun. Ayo kumpulkan poin lebih banyak!</p>
+                <a href="/rewards" class="mt-8 inline-flex rounded-2xl bg-indigo-600 px-8 py-3 text-sm font-bold text-white shadow-lg shadow-indigo-200 transition hover:bg-indigo-700">Lihat Rewards</a>
+            </div>
+        <% } %>
+    </div>
+</section>
+
+<script>
+function copyToClipboard(text) {
+    if (!text || text === 'N/A') return;
+    
+    // Fallback for non-secure contexts or older browsers
+    if (!navigator.clipboard) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            showSuccess();
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+        document.body.removeChild(textArea);
+        return;
+    }
+
+    navigator.clipboard.writeText(text).then(() => {
+        showSuccess();
+    }, (err) => {
+        console.error('Async: Could not copy text: ', err);
+    });
+
+    function showSuccess() {
+        Swal.fire({
+            icon: 'success',
+            title: 'Copied!',
+            text: 'Voucher code copied to clipboard.',
+            timer: 1500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    }
+}
+</script>
