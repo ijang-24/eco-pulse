@@ -345,10 +345,16 @@ app.get('/waste/track', isAuthenticated, (req, res) => {
     res.render('waste_track', { title: 'Track Waste | Eco-Pulse' });
 });
 
-app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, res) => {
+app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, res) => {
     const { waste_type, weight } = req.body;
+    const parsedWeight = parseFloat(weight);
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
-    
+
+    if (isNaN(parsedWeight) || parsedWeight <= 0) {
+        req.flash("error_msg", "Berat sampah tidak valid.");
+        return res.redirect("/waste/track");
+    }
+
     try {
         const config = await prisma.point_configs.findUnique({
             where: { waste_type }
@@ -356,14 +362,14 @@ app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, re
 
         if (!config) throw new Error('Invalid waste type');
 
-        const points = Math.floor(parseFloat(weight) * config.points_per_kg);
+        const points = Math.floor(parsedWeight * config.points_per_kg);
 
         await prisma.$transaction(async (tx) => {
             await tx.waste_logs.create({
                 data: {
                     user_id: req.session.user.id,
                     waste_type,
-                    weight: parseFloat(weight),
+                    weight: parsedWeight,
                     photo_url,
                     points_earned: points
                 }
@@ -389,46 +395,41 @@ app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, re
 });
 
 // Admin Routes
-app.get('/admin/dashboard', isAdmin, async (req, res) => {
+app.get("/admin/dashboard", isAdmin, async (req, res) => {
     try {
-        const logs = await prisma.waste_logs.findMany({
-            include: {
-                user: true
-            },
-            orderBy: {
-                created_at: 'desc'
-            }
-        });
+        const [userCount, totalWaste, totalPoints, logs] = await Promise.all([
+            prisma.users.count({ where: { role: "citizen" } }),
+            prisma.waste_logs.aggregate({ _sum: { weight: true }, where: { status: "verified" } }),
+            prisma.users.aggregate({ _sum: { total_points: true } }),
+            prisma.waste_logs.findMany({
+                include: { user: true },
+                orderBy: { created_at: "desc" }
+            })
+        ]);
 
-        // Flatten logs for EJS compatibility
         const flattenedLogs = logs.map(log => ({
             ...log,
-            username: log.user.username,
-            rt: log.user.address_rt,
-            rw: log.user.address_rw
+            username: log.user?.username || "Unknown",
+            rt: log.user?.address_rt || "-",
+            rw: log.user?.address_rw || "-"
         }));
 
-        res.render('admin_dashboard', { title: 'Admin Panel | Eco-Pulse', logs: flattenedLogs, isAdminArea: true });
-    } catch (err) {
-        console.error('Admin Dashboard Error:', err);
-        req.flash('error_msg', 'Failed to load admin panel');
-        res.redirect('/dashboard');
+        res.render("admin_dashboard", {
+            title: "Admin Panel | Eco-Pulse",
+            stats: {
+                users: userCount,
+                waste: totalWaste._sum.weight || 0,
+                points: totalPoints._sum.total_points || 0
+            },
+            logs: flattenedLogs,
+            isAdminArea: true
+        });
     }
 });
 
 app.post('/admin/verify/:id', isAdmin, async (req, res) => {
     const logId = parseEntityId(req.params.id);
     const status = normalizeText(req.body.status);
-
-    if (!logId) {
-        req.flash('error_msg', 'ID log tidak valid.');
-        return res.redirect('/admin/dashboard');
-    }
-
-    if (!['verified', 'rejected'].includes(status)) {
-        req.flash('error_msg', 'Status verifikasi tidak valid.');
-        return res.redirect('/admin/dashboard');
-    }
 
     try {
         await prisma.$transaction(async (tx) => {
@@ -437,16 +438,16 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
             });
 
             if (!log) {
-                throw new Error('Log tidak ditemukan.');
+                throw new Error("Log tidak ditemukan.");
             }
 
+            if (log.status === status) return;
+
             let pointsDelta = 0;
-            if (log.status !== 'verified' && status === 'verified') {
+            if (log.status !== "verified" && status === "verified") {
                 pointsDelta = log.points_earned;
-            } else if (log.status === 'verified' && status === 'rejected') {
+            } else if (log.status === "verified" && status === "rejected") {
                 pointsDelta = -log.points_earned;
-            } else if (log.status === 'rejected' && status === 'verified') {
-                pointsDelta = log.points_earned;
             }
 
             await tx.waste_logs.update({
@@ -455,20 +456,45 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
             });
 
             if (pointsDelta !== 0) {
-                const user = await tx.users.findUnique({ where: { id: log.user_id } });
                 await tx.users.update({
                     where: { id: log.user_id },
                     data: {
-                        total_points: Math.max((user.total_points || 0) + pointsDelta, 0)
+                        total_points: {
+                            increment: pointsDelta
+                        }
                     }
                 });
             }
-        });
-
-        req.flash('success_msg', `Waste log marked as ${status}.`);
-        res.redirect('/admin/dashboard');
+app.get("/admin/rewards", isAdmin, async (req, res) => {
+    try {
+        const rewards = await prisma.rewards.findMany();
+        res.render("admin_rewards", { title: "Kelola Reward | Eco-Pulse", rewards, isAdminArea: true });
     } catch (err) {
-        console.error('Verify Error:', err);
+        console.error("Admin Rewards Error:", err);
+        res.redirect("/admin/dashboard");
+    }
+});
+
+app.post("/admin/rewards/add", isAdmin, async (req, res) => {
+    const { title, description, points_cost, stock, image_url } = req.body;
+    try {
+        await prisma.rewards.create({
+            data: {
+                title,
+                description,
+                points_cost: parseInt(points_cost),
+                stock: parseInt(stock),
+                image_url
+            }
+        });
+        req.flash("success_msg", "Reward berhasil ditambahkan!");
+        res.redirect("/admin/rewards");
+    } catch (err) {
+        console.error("Add Reward Error:", err);
+        req.flash("error_msg", "Gagal menambah reward.");
+        res.redirect("/admin/rewards");
+    }
+});
         req.flash('error_msg', 'Failed to update status: ' + err.message);
         res.redirect('/admin/dashboard');
     }
