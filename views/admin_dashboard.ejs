@@ -1,147 +1,136 @@
-<div class="mb-8 grid gap-6 xl:grid-cols-[1.15fr_0.85fr]">
-    <div class="rounded-[2rem] bg-gradient-to-br from-amber-300 via-orange-200 to-rose-200 p-8 text-slate-900 shadow-[0_24px_80px_rgba(251,191,36,0.20)]">
-        <p class="mb-3 inline-flex rounded-full bg-white/65 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-amber-800">Admin Operations</p>
-        <h1 class="text-4xl font-extrabold leading-tight">Panel verifikasi untuk menjaga data komunitas tetap valid.</h1>
-        <p class="mt-4 max-w-2xl text-base leading-7 text-slate-700">
-            Tinjau setiap log sampah, cek bukti foto, lalu tentukan apakah kontribusi tersebut layak diverifikasi. Total poin warga akan mengikuti keputusan verifikasi di panel ini.
-        </p>
-        <div class="mt-8 flex flex-wrap gap-3 text-sm font-semibold">
-            <span class="rounded-full bg-white/55 px-4 py-2 text-emerald-800">Verified menambah poin</span>
-            <span class="rounded-full bg-white/55 px-4 py-2 text-amber-900">Pending belum menambah poin</span>
-            <span class="rounded-full bg-white/55 px-4 py-2 text-rose-800">Rejected menolak kontribusi</span>
-        </div>
-    </div>
-
-    <div class="rounded-[2rem] border border-amber-100 bg-white/95 p-8 shadow-[0_18px_60px_rgba(251,191,36,0.12)] backdrop-blur">
-        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">Review Summary</p>
-        <div class="mt-6 grid gap-4 sm:grid-cols-3">
-            <div class="rounded-2xl bg-slate-50 p-5">
-                <p class="text-sm text-slate-500">Total Logs</p>
-                <p class="mt-2 text-3xl font-extrabold text-slate-900"><%= logs ? logs.length : 0 %></p>
+<section class="space-y-8">
+    <!-- Admin Header -->
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-amber-600 via-orange-500 to-rose-400 p-8 text-white shadow-[0_20px_50px_rgba(245,158,11,0.15)] lg:p-12">
+        <div class="absolute -right-10 top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
+            <div>
+                <p class="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30">System Administration</p>
+                <h1 class="mt-4 text-4xl font-extrabold tracking-tight lg:text-5xl">Community <span class="text-amber-200">Review Panel</span></h1>
+                <p class="mt-2 text-amber-50/90 font-medium">Validasi kontribusi warga untuk menjaga integritas data lingkungan komunitas.</p>
             </div>
-            <div class="rounded-2xl bg-amber-50 p-5">
-                <p class="text-sm text-amber-700">Pending Review</p>
-                <p class="mt-2 text-3xl font-extrabold text-amber-900"><%= logs ? logs.filter(log => log.status === 'pending').length : 0 %></p>
-            </div>
-            <div class="rounded-2xl bg-emerald-50 p-5">
-                <p class="text-sm text-emerald-700">Verified</p>
-                <p class="mt-2 text-3xl font-extrabold text-emerald-900"><%= logs ? logs.filter(log => log.status === 'verified').length : 0 %></p>
-            </div>
-        </div>
-    </div>
-</div>
-
-<% if (logs && logs.length > 0) { %>
-    <div class="grid gap-5">
-        <% logs.forEach(log => { %>
-            <div class="rounded-[1.75rem] border border-slate-200/80 bg-white/95 p-6 shadow-[0_14px_40px_rgba(15,23,42,0.06)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_50px_rgba(15,23,42,0.09)]">
-                <div class="flex flex-col gap-6 xl:flex-row xl:items-center xl:justify-between">
-                    <div class="grid flex-1 gap-5 md:grid-cols-[1.2fr_1fr_0.9fr]">
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Citizen</p>
-                            <p class="mt-2 text-xl font-extrabold text-slate-900"><%= log.username %></p>
-                            <p class="mt-1 text-sm text-slate-500">RT <%= log.rt %> / RW <%= log.rw %></p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Waste Details</p>
-                            <p class="mt-2 text-lg font-bold capitalize text-slate-900"><%= log.waste_type %></p>
-                            <p class="mt-1 text-sm text-slate-500"><%= log.weight %> kg</p>
-                            <p class="mt-2 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">Potential +<%= log.points_earned %> pts</p>
-                        </div>
-
-                        <div>
-                            <p class="text-xs font-bold uppercase tracking-[0.18em] text-slate-400">Current Status</p>
-                            <div class="mt-2">
-                                <span class="inline-flex rounded-full px-3 py-1.5 text-xs font-bold capitalize
-                                    <%= log.status === 'verified' ? 'bg-green-100 text-green-700' :
-                                       log.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700' %>">
-                                    <%= log.status %>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex flex-col gap-4 xl:w-[320px]">
-                        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-3">
-                            <% if (log.photo_url) { %>
-                                <a href="<%= log.photo_url %>" target="_blank" class="block">
-                                    <img src="<%= log.photo_url %>" class="h-40 w-full rounded-xl border border-slate-200 object-cover">
-                                </a>
-                                <p class="mt-3 text-xs text-slate-500">Klik gambar untuk membuka bukti foto ukuran penuh.</p>
-                            <% } else { %>
-                                <div class="flex h-40 items-center justify-center rounded-xl border border-dashed border-slate-200 bg-white text-sm font-medium text-slate-400">No proof image uploaded</div>
-                            <% } %>
-                        </div>
-
-                        <% if (log.status === 'pending') { %>
-                            <div class="grid gap-2 sm:grid-cols-3">
-                                <form action="/admin/verify/<%= log.id %>" method="POST">
-                                    <button name="status" value="verified" class="w-full rounded-full bg-emerald-700 px-4 py-3 text-sm font-bold text-white transition hover:bg-emerald-800">Verify</button>
-                                </form>
-                                <form action="/admin/verify/<%= log.id %>" method="POST">
-                                    <button name="status" value="rejected" class="w-full rounded-full bg-rose-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-rose-700">Reject</button>
-                                </form>
-                                <form action="/admin/delete/<%= log.id %>" method="POST" class="js-delete-log" data-log-name="<%= log.username %> - <%= log.waste_type %>" data-log-status="<%= log.status %>">
-                                    <button type="submit" class="w-full rounded-full bg-slate-200 px-4 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-300">Delete</button>
-                                </form>
-                            </div>
-                        <% } else { %>
-                            <div class="flex items-center justify-end">
-                                <form action="/admin/delete/<%= log.id %>" method="POST" class="js-delete-log" data-log-name="<%= log.username %> - <%= log.waste_type %>" data-log-status="<%= log.status %>">
-                                    <button type="submit" class="inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-600 shadow-sm transition hover:bg-rose-100 hover:text-rose-700" aria-label="Delete log">
-                                        <svg viewBox="0 0 24 24" fill="none" class="h-5 w-5" aria-hidden="true">
-                                            <path d="M9 3.75h6m-8.25 3h10.5m-9 0 .75 12a1.5 1.5 0 0 0 1.5 1.38h3.75A1.5 1.5 0 0 0 15.75 18.75l.75-12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                                            <path d="M10 10.5v5.25M14 10.5v5.25" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                            <path d="M8.25 6.75h7.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-                                        </svg>
-                                    </button>
-                                </form>
-                            </div>
-                        <% } %>
-                    </div>
+            <div class="flex items-center gap-4 rounded-2xl bg-white/10 p-4 backdrop-blur-md ring-1 ring-white/20">
+                <div class="text-right">
+                    <p class="text-xs font-bold uppercase tracking-widest text-amber-100">Pending Review</p>
+                    <p class="text-2xl font-black"><%= logs.filter(l => l.status === 'pending').length %></p>
+                </div>
+                <div class="h-10 w-px bg-white/20"></div>
+                <div class="text-right">
+                    <p class="text-xs font-bold uppercase tracking-widest text-amber-100">Total Logs</p>
+                    <p class="text-2xl font-black"><%= logs.length %></p>
                 </div>
             </div>
-        <% }) %>
+        </div>
     </div>
-<% } else { %>
-    <div class="rounded-[2rem] border border-dashed border-slate-300 bg-white/80 px-6 py-16 text-center shadow-[0_12px_35px_rgba(15,23,42,0.05)]">
-        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Queue Empty</p>
-        <h2 class="mt-3 text-2xl font-extrabold text-slate-900">Belum ada log sampah untuk direview.</h2>
-        <p class="mt-3 text-sm leading-6 text-slate-500">Saat warga mengirim log baru, data akan muncul di sini lengkap dengan status, poin potensial, dan bukti foto.</p>
+
+    <!-- Main Content Table -->
+    <div class="rounded-[2.5rem] border border-amber-100 bg-white/95 p-6 shadow-[0_20px_60px_rgba(245,158,11,0.08)] backdrop-blur-xl lg:p-8">
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <h2 class="text-2xl font-extrabold text-slate-900">Queue Validasi Sampah</h2>
+            <div class="flex items-center gap-2">
+                <span class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <p class="text-sm font-bold text-slate-500 uppercase tracking-widest">Real-time Review System</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b border-slate-100 text-[11px] font-bold uppercase tracking-[0.2em] text-slate-400">
+                        <th class="px-6 py-4">Citizen & Location</th>
+                        <th class="px-6 py-4">Waste Details</th>
+                        <th class="px-6 py-4">Proof of Action</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4 text-right">Verification Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    <% if (logs && logs.length > 0) { %>
+                        <% logs.forEach(log => { %>
+                            <tr class="group transition hover:bg-slate-50/50">
+                                <td class="px-6 py-6">
+                                    <div class="flex items-center gap-4">
+                                        <div class="flex h-10 w-10 items-center justify-center rounded-full bg-amber-50 text-sm font-black text-amber-600">
+                                            <%= log.username.charAt(0).toUpperCase() %>
+                                        </div>
+                                        <div>
+                                            <p class="text-base font-extrabold text-slate-900"><%= log.username %></p>
+                                            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider">RT <%= log.rt %> / RW <%= log.rw %></p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6">
+                                    <p class="text-sm font-extrabold capitalize text-slate-900"><%= log.waste_type %></p>
+                                    <div class="mt-1 flex items-center gap-2">
+                                        <span class="text-sm font-bold text-slate-600"><%= log.weight %> kg</span>
+                                        <span class="h-1 w-1 rounded-full bg-slate-300"></span>
+                                        <span class="text-[10px] font-black text-emerald-600">+<%= log.points_earned %> PTS</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-6">
+                                    <% if (log.photo_url) { %>
+                                        <button onclick="Swal.fire({imageUrl: '<%= log.photo_url %>', imageAlt: 'Proof', showConfirmButton: false, customClass: {popup: 'rounded-[2rem]'}})" class="relative h-14 w-20 overflow-hidden rounded-xl bg-slate-100 ring-2 ring-transparent transition group-hover:ring-amber-200">
+                                            <img src="<%= log.photo_url %>" class="h-full w-full object-cover">
+                                            <div class="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 transition group-hover:opacity-100">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                            </div>
+                                        </button>
+                                    <% } else { %>
+                                        <span class="text-xs font-bold italic text-slate-300">No Photo Attached</span>
+                                    <% } %>
+                                </td>
+                                <td class="px-6 py-6 text-sm font-medium">
+                                    <span class="inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest 
+                                        <%= log.status === 'verified' ? 'bg-emerald-100 text-emerald-700' : 
+                                           log.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' %>">
+                                        <%= log.status %>
+                                    </span>
+                                </td>
+                                <td class="px-6 py-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <form action="/admin/verify/<%= log.id %>" method="POST" class="inline-flex gap-2">
+                                            <button name="status" value="verified" title="Verify contribution" class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white shadow-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                            <button name="status" value="rejected" title="Reject contribution" class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white shadow-sm">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                        <div class="h-8 w-px bg-slate-100 mx-1"></div>
+                                        <form action="/admin/delete/<%= log.id %>" method="POST" onsubmit="return confirm('Hapus permanen data ini?')">
+                                            <button type="submit" title="Delete record" class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-100 text-slate-400 transition hover:bg-slate-900 hover:text-white">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="5" class="px-6 py-20 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                        </svg>
+                                    </div>
+                                    <p class="mt-4 text-sm font-bold text-slate-400 uppercase tracking-widest">Antrian Kosong</p>
+                                    <p class="mt-1 text-xs text-slate-400">Belum ada kontribusi warga yang perlu direview saat ini.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
     </div>
-<% } %>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const forms = document.querySelectorAll('.js-delete-log');
-
-        forms.forEach((form) => {
-            form.addEventListener('submit', (event) => {
-                event.preventDefault();
-
-                const logName = form.dataset.logName || 'this log';
-                const logStatus = form.dataset.logStatus || 'processed';
-
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Delete log?',
-                    html: `<div style="text-align:left">
-                        <p>Delete <strong>${logName}</strong>?</p>
-                        <p style="margin-top:8px;color:#6b7280">This ${logStatus} log will be removed permanently.</p>
-                    </div>`,
-                    showCancelButton: true,
-                    confirmButtonText: 'Yes, delete',
-                    cancelButtonText: 'Cancel',
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#64748b',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
-        });
-    });
-</script>
+</section>

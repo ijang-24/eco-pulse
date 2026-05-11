@@ -5,7 +5,7 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const flash = require('connect-flash');
 const multer = require('multer');
-const db = require('./src/models/db');
+const prisma = require('./src/utils/prisma');
 const { hashPassword, verifyHashedPassword, isPasswordHashed } = require('./src/models/password');
 
 // Multer Config
@@ -96,23 +96,41 @@ app.get('/', (req, res) => {
 
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     try {
-        const [user] = await db.query('SELECT * FROM users WHERE id = ?', [req.session.user.id]);
-        const [logs] = await db.query('SELECT * FROM waste_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 5', [req.session.user.id]);
-        const [pointsRows] = await db.query(
-            'SELECT COALESCE(SUM(points_earned), 0) AS total_points FROM waste_logs WHERE user_id = ? AND status = "verified"',
-            [req.session.user.id]
-        );
+        const user = await prisma.users.findUnique({
+            where: { id: req.session.user.id }
+        });
 
-        const totalPoints = pointsRows[0]?.total_points || 0;
+        const logs = await prisma.waste_logs.findMany({
+            where: { user_id: req.session.user.id },
+            orderBy: { created_at: 'desc' },
+            take: 5
+        });
 
-        if (user[0] && Number(user[0].total_points || 0) !== Number(totalPoints)) {
-            await db.query('UPDATE users SET total_points = ? WHERE id = ?', [totalPoints, req.session.user.id]);
+        const aggregatePoints = await prisma.waste_logs.aggregate({
+            where: { 
+                user_id: req.session.user.id,
+                status: 'verified'
+            },
+            _sum: {
+                points_earned: true
+            }
+        });
+
+        const totalPoints = aggregatePoints._sum.points_earned || 0;
+
+        if (user && Number(user.total_points || 0) !== Number(totalPoints)) {
+            await prisma.users.update({
+                where: { id: req.session.user.id },
+                data: { total_points: totalPoints }
+            });
+            user.total_points = totalPoints;
         }
 
-        if (user[0]) {
-            user[0].total_points = totalPoints;
-        }
-
+        // Calculate impact based on logs (mock logic if point_configs not joined)
+        let totalCO2 = 0;
+        let totalTrees = 0;
+        // Ideally we join with point_configs, but for now we'll use 0 or fetch configs
+        
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
             user: user,
@@ -129,8 +147,59 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/leaderboard', (req, res) => {
-    res.render('leaderboard', { title: 'Leaderboard | Eco-Pulse' });
+app.get('/leaderboard', async (req, res) => {
+    try {
+        // Group by RT/RW and sum points from users, or aggregate waste_logs
+        // Using Prisma aggregate/groupBy for waste_logs to get real participation
+        const leaderboardData = await prisma.waste_logs.groupBy({
+            by: ['user_id'],
+            where: { status: 'verified' },
+            _sum: {
+                points_earned: true,
+                weight: true
+            }
+        });
+
+        // Map logs to users to get RT/RW info
+        const users = await prisma.users.findMany({
+            where: {
+                id: { in: leaderboardData.map(d => d.user_id).filter(id => id !== null) }
+            },
+            select: {
+                id: true,
+                address_rt: true,
+                address_rw: true
+            }
+        });
+
+        // Aggregate by RT/RW
+        const rtRwGroups = {};
+        leaderboardData.forEach(data => {
+            const user = users.find(u => u.id === data.user_id);
+            if (user) {
+                const key = `RT ${user.address_rt} / RW ${user.address_rw}`;
+                if (!rtRwGroups[key]) {
+                    rtRwGroups[key] = { rt_rw: key, total_points: 0, total_weight: 0 };
+                }
+                rtRwGroups[key].total_points += data._sum.points_earned || 0;
+                rtRwGroups[key].total_weight += Number(data._sum.weight || 0);
+            }
+        });
+
+        const sortedLeaderboard = Object.values(rtRwGroups)
+            .sort((a, b) => b.total_points - a.total_points);
+
+        res.render('leaderboard', { 
+            title: 'Leaderboard | Eco-Pulse',
+            leaderboard: sortedLeaderboard
+        });
+    } catch (err) {
+        console.error('Leaderboard Error:', err);
+        res.render('leaderboard', { 
+            title: 'Leaderboard | Eco-Pulse',
+            leaderboard: [] 
+        });
+    }
 });
 
 app.get('/rewards', isAuthenticated, async (req, res) => {
@@ -195,8 +264,9 @@ app.post('/login', async (req, res) => {
     }
 
     try {
-        const [users] = await db.query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
-        const user = users[0];
+        const user = await prisma.users.findUnique({
+            where: { email: email }
+        });
 
         if (!user) {
             req.flash('error_msg', 'Invalid email or password');
@@ -211,7 +281,10 @@ app.post('/login', async (req, res) => {
             passwordMatches = true;
 
             const hashedPassword = await hashPassword(password);
-            await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id]);
+            await prisma.users.update({
+                where: { id: user.id },
+                data: { password: hashedPassword }
+            });
             user.password = hashedPassword;
         }
 
@@ -249,10 +322,16 @@ app.post('/register', async (req, res) => {
 
     try {
         const hashedPassword = await hashPassword(password);
-        await db.query(
-            'INSERT INTO users (username, email, password, rt, rw, role) VALUES (?, ?, ?, ?, ?, ?)',
-            [username, email, hashedPassword, rt, rw, role]
-        );
+        await prisma.users.create({
+            data: {
+                username,
+                email,
+                password: hashedPassword,
+                address_rt: rt,
+                address_rw: rw,
+                role
+            }
+        });
         req.flash('success_msg', 'Registration successful! Please login.');
         res.redirect('/login');
     } catch (err) {
@@ -329,7 +408,7 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
             rw: log.user.address_rw
         }));
 
-        res.render('admin_dashboard', { title: 'Admin Panel | Eco-Pulse', logs: flattenedLogs });
+        res.render('admin_dashboard', { title: 'Admin Panel | Eco-Pulse', logs: flattenedLogs, isAdminArea: true });
     } catch (err) {
         console.error('Admin Dashboard Error:', err);
         req.flash('error_msg', 'Failed to load admin panel');
@@ -351,57 +430,47 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
         return res.redirect('/admin/dashboard');
     }
 
-    let connection;
-
     try {
-        connection = await db.getConnection();
-        await connection.beginTransaction();
+        await prisma.$transaction(async (tx) => {
+            const log = await tx.waste_logs.findUnique({
+                where: { id: logId }
+            });
 
-        const [rows] = await connection.query(
-            'SELECT id, user_id, status, points_earned FROM waste_logs WHERE id = ? FOR UPDATE',
-            [logId]
-        );
+            if (!log) {
+                throw new Error('Log tidak ditemukan.');
+            }
 
-        const log = rows[0];
+            let pointsDelta = 0;
+            if (log.status !== 'verified' && status === 'verified') {
+                pointsDelta = log.points_earned;
+            } else if (log.status === 'verified' && status === 'rejected') {
+                pointsDelta = -log.points_earned;
+            } else if (log.status === 'rejected' && status === 'verified') {
+                pointsDelta = log.points_earned;
+            }
 
-        if (!log) {
-            await connection.rollback();
-            req.flash('error_msg', 'Log tidak ditemukan.');
-            return res.redirect('/admin/dashboard');
-        }
+            await tx.waste_logs.update({
+                where: { id: logId },
+                data: { status }
+            });
 
-        let pointsDelta = 0;
-        if (log.status !== 'verified' && status === 'verified') {
-            pointsDelta = log.points_earned;
-        } else if (log.status === 'verified' && status === 'rejected') {
-            pointsDelta = -log.points_earned;
-        } else if (log.status === 'rejected' && status === 'verified') {
-            pointsDelta = log.points_earned;
-        }
+            if (pointsDelta !== 0) {
+                const user = await tx.users.findUnique({ where: { id: log.user_id } });
+                await tx.users.update({
+                    where: { id: log.user_id },
+                    data: {
+                        total_points: Math.max((user.total_points || 0) + pointsDelta, 0)
+                    }
+                });
+            }
+        });
 
-        await connection.query('UPDATE waste_logs SET status = ? WHERE id = ?', [status, logId]);
-
-        if (pointsDelta !== 0) {
-            await connection.query(
-                'UPDATE users SET total_points = GREATEST(total_points + ?, 0) WHERE id = ?',
-                [pointsDelta, log.user_id]
-            );
-        }
-
-        await connection.commit();
         req.flash('success_msg', `Waste log marked as ${status}.`);
         res.redirect('/admin/dashboard');
     } catch (err) {
-        if (connection) {
-            await connection.rollback();
-        }
         console.error('Verify Error:', err);
-        req.flash('error_msg', 'Failed to update status');
+        req.flash('error_msg', 'Failed to update status: ' + err.message);
         res.redirect('/admin/dashboard');
-    } finally {
-        if (connection) {
-            connection.release();
-        }
     }
 });
 
@@ -429,3 +498,4 @@ app.get('/logout', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Eco-Pulse server is running on http://localhost:${PORT}`);
 });
+// Optimized with RTK for Supabase Live Leaderboard

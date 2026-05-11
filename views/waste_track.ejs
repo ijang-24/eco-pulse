@@ -1,160 +1,74 @@
-<div class="mx-auto max-w-5xl">
-    <div class="mb-8 grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
-        <div class="rounded-[2rem] bg-gradient-to-br from-emerald-800 via-emerald-700 to-lime-600 p-8 text-white shadow-[0_24px_80px_rgba(21,128,61,0.25)]">
-            <p class="mb-3 inline-flex rounded-full bg-white/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.18em] text-emerald-50">Waste Submission</p>
-            <h1 class="max-w-xl text-4xl font-extrabold leading-tight">Laporkan sampah terpilah dengan format yang rapi dan siap diverifikasi.</h1>
-            <p class="mt-4 max-w-2xl text-base leading-7 text-emerald-50/90">
-                Setiap log masuk sebagai bukti kontribusi warga. Setelah diverifikasi admin, poin akan dihitung ke akun Anda dan muncul di dashboard komunitas.
-            </p>
-            <div class="mt-8 grid gap-4 sm:grid-cols-3">
-                <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                    <p class="text-sm text-emerald-100">Step 1</p>
-                    <p class="mt-2 font-semibold">Pilih jenis sampah</p>
+<section class="max-w-2xl mx-auto">
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-[0_20px_60px_rgba(34,197,94,0.12)] border border-emerald-100 lg:p-12">
+        <!-- Decoration -->
+        <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-50 blur-2xl"></div>
+        <div class="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-lime-50 blur-2xl"></div>
+
+        <div class="relative">
+            <div class="flex items-center gap-4 mb-8">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                 </div>
-                <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                    <p class="text-sm text-emerald-100">Step 2</p>
-                    <p class="mt-2 font-semibold">Isi berat dan unggah foto</p>
-                </div>
-                <div class="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
-                    <p class="text-sm text-emerald-100">Step 3</p>
-                    <p class="mt-2 font-semibold">Tunggu verifikasi admin</p>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Track Your Impact</h1>
+                    <p class="text-sm font-medium text-slate-500 italic">Setiap kilogram sampah terpilah adalah langkah nyata untuk bumi.</p>
                 </div>
             </div>
-        </div>
-
-        <div class="rounded-[2rem] border border-emerald-100 bg-white/90 p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur">
-            <h2 class="text-xl font-extrabold text-slate-900">Standar Pengajuan</h2>
-            <div class="mt-6 space-y-4 text-sm leading-6 text-slate-600">
-                <div class="rounded-2xl bg-emerald-50 p-4">
-                    <p class="font-semibold text-emerald-900">Foto harus jelas</p>
-                    <p class="mt-1">Pastikan sampah terlihat, tidak blur, dan sesuai kategori yang dipilih.</p>
-                </div>
-                <div class="rounded-2xl bg-slate-50 p-4">
-                    <p class="font-semibold text-slate-900">Berat harus realistis</p>
-                    <p class="mt-1">Gunakan estimasi yang mendekati kondisi aktual agar verifikasi lebih cepat.</p>
-                </div>
-                <div class="rounded-2xl bg-amber-50 p-4">
-                    <p class="font-semibold text-amber-900">Poin masuk setelah verifikasi</p>
-                    <p class="mt-1">Log dengan status `pending` belum menambah total poin sampai disetujui admin.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="rounded-[2rem] border border-slate-200/80 bg-white/95 p-8 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur lg:p-10">
-        <div class="mb-8 flex flex-col gap-3 border-b border-slate-100 pb-6">
-            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">Submission Form</p>
-            <h2 class="text-3xl font-extrabold text-slate-900">Input log sampah baru</h2>
-            <p class="max-w-2xl text-sm leading-6 text-slate-500">Lengkapi data berikut untuk membuat log baru yang konsisten, mudah diverifikasi, dan siap diproses pada panel admin.</p>
-        </div>
-
-        <form action="/waste/track" method="POST" enctype="multipart/form-data" class="grid gap-6 lg:grid-cols-2">
-            <div class="space-y-2">
-                <label class="block text-sm font-semibold text-slate-700">Jenis Sampah</label>
-                <select name="waste_type" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100">
-                    <option value="plastic">Plastic - Bottles, bags, wrappers</option>
-                    <option value="paper">Paper - Carton, office paper, newspaper</option>
-                    <option value="metal">Metal - Cans, foil, containers</option>
-                    <option value="glass">Glass - Bottles, jars</option>
-                    <option value="organic">Organic - Food waste, leaves</option>
-                </select>
-            </div>
-
-            <div class="space-y-2">
-                <label class="block text-sm font-semibold text-slate-700">Estimasi Berat</label>
-                <div class="relative">
-                    <input type="number" step="0.1" min="0.1" name="weight" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 pr-14 text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100" placeholder="2.5" required>
-                    <span class="pointer-events-none absolute inset-y-0 right-4 flex items-center text-sm font-semibold text-slate-400">kg</span>
-                </div>
-            </div>
-
-            <div class="space-y-2 lg:col-span-2">
-                <label class="block text-sm font-semibold text-slate-700">Foto Bukti</label>
-                <label class="flex cursor-pointer flex-col items-center justify-center rounded-[1.5rem] border border-dashed border-emerald-300 bg-emerald-50/70 px-6 py-10 text-center transition hover:border-emerald-400 hover:bg-emerald-50">
-                    <span class="rounded-full bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">Upload Image</span>
-                    <span class="mt-4 text-lg font-semibold text-slate-900">Pilih foto dokumentasi sampah</span>
-                    <span class="mt-2 max-w-xl text-sm leading-6 text-slate-500">Gunakan foto yang cukup terang dan menunjukkan jenis sampah secara jelas agar verifikasi lebih cepat.</span>
-                    <input id="photo-input" type="file" name="photo" accept="image/*" class="sr-only" required>
-                </label>
-
-                <div id="photo-preview-card" class="hidden overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50 shadow-sm">
-                    <div class="grid gap-0 lg:grid-cols-[0.95fr_1.05fr]">
-                        <div class="bg-slate-100">
-                            <img id="photo-preview-image" src="" alt="Preview foto bukti" class="h-56 w-full object-cover lg:h-full lg:min-h-[220px]">
-                        </div>
-                        <div class="flex flex-col justify-between p-5 lg:p-6">
-                            <div>
-                                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">Preview</p>
-                                <h3 class="mt-3 text-xl font-extrabold text-slate-900 lg:text-2xl">Foto siap dikirim</h3>
-                                <p class="mt-3 text-sm leading-6 text-slate-500">Periksa lagi apakah foto sudah jelas, tidak blur, dan sesuai dengan jenis sampah yang dipilih.</p>
-                            </div>
-                            <div class="mt-5 rounded-2xl bg-white px-4 py-3 shadow-sm">
-                                <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">File</p>
-                                <p id="photo-preview-name" class="mt-2 break-all text-sm font-semibold text-slate-700"></p>
+            
+            <form action="/waste/track" method="POST" enctype="multipart/form-data" class="space-y-8">
+                <div class="grid gap-6">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Jenis Sampah</label>
+                        <div class="relative group">
+                            <select name="waste_type" class="w-full appearance-none px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-900 font-bold focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 focus:outline-none transition group-hover:bg-white">
+                                <option value="plastic">Plastic (Bottles, Bags)</option>
+                                <option value="paper">Paper (Carton, Newspaper)</option>
+                                <option value="metal">Metal (Cans, Foil)</option>
+                                <option value="glass">Glass (Bottles, Jars)</option>
+                                <option value="organic">Organic (Food Waste)</option>
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-5 flex items-center text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
                             </div>
                         </div>
                     </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Estimasi Berat (kg)</label>
+                        <div class="relative group">
+                            <input type="number" step="0.1" name="weight" class="w-full px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-900 font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 focus:outline-none transition group-hover:bg-white" placeholder="e.g., 2.5" required>
+                            <div class="absolute inset-y-0 right-5 flex items-center">
+                                <span class="text-sm font-black text-slate-300 uppercase tracking-widest">kg</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Bukti Foto</label>
+                        <div class="relative">
+                            <input type="file" name="photo" accept="image/*" class="w-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/30 px-5 py-8 text-center text-sm font-bold text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50/50" required>
+                            <div class="pointer-events-none absolute inset-0 flex flex-col items-center justify-center opacity-0 transition group-hover:opacity-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                            </div>
+                        </div>
+                        <p class="mt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center">* Foto yang jelas membantu proses verifikasi admin lebih cepat.</p>
+                    </div>
                 </div>
 
-                <div id="photo-preview-empty" class="rounded-[1.5rem] border border-dashed border-slate-200 bg-slate-50 px-6 py-8 text-center">
-                    <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-400">Preview Area</p>
-                    <p class="mt-2 text-sm leading-6 text-slate-500">Preview foto akan muncul di sini setelah Anda memilih file.</p>
-                </div>
-            </div>
-
-            <div class="rounded-[1.5rem] border border-emerald-100 bg-emerald-50 px-5 py-4 text-sm leading-6 text-emerald-900 lg:col-span-2">
-                Estimasi poin dihitung dari berat sampah yang Anda laporkan. Poin resmi akan masuk setelah status log berubah menjadi <span class="font-bold">verified</span> di panel admin.
-            </div>
-
-            <div class="flex flex-col gap-3 lg:col-span-2 lg:flex-row lg:items-center lg:justify-between">
-                <p class="text-sm text-slate-500">Pastikan data benar sebelum dikirim. Log yang tidak sesuai dapat ditolak oleh admin.</p>
-                <button type="submit" class="inline-flex items-center justify-center rounded-full bg-emerald-700 px-7 py-3.5 text-sm font-bold text-white shadow-[0_12px_30px_rgba(21,128,61,0.24)] transition hover:bg-emerald-800">Submit Log for Review</button>
-            </div>
-        </form>
+                <button type="submit" class="w-full group relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-emerald-600 px-8 py-5 font-black text-white shadow-xl shadow-emerald-200 transition active:scale-[0.98]">
+                    <span class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-lime-500 opacity-0 transition group-hover:opacity-100"></span>
+                    <span class="relative">Kirim Laporan & Klaim Poin</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="relative h-5 w-5 transition group-hover:translate-x-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </form>
+        </div>
     </div>
-</div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const photoInput = document.getElementById('photo-input');
-        const previewCard = document.getElementById('photo-preview-card');
-        const previewEmpty = document.getElementById('photo-preview-empty');
-        const previewImage = document.getElementById('photo-preview-image');
-        const previewName = document.getElementById('photo-preview-name');
-
-        if (!photoInput || !previewCard || !previewEmpty || !previewImage || !previewName) {
-            return;
-        }
-
-        photoInput.addEventListener('change', (event) => {
-            const [file] = event.target.files || [];
-
-            if (!file) {
-                previewCard.classList.add('hidden');
-                previewEmpty.classList.remove('hidden');
-                previewImage.src = '';
-                previewName.textContent = '';
-                return;
-            }
-
-            if (!file.type.startsWith('image/')) {
-                previewCard.classList.add('hidden');
-                previewEmpty.classList.remove('hidden');
-                previewImage.src = '';
-                previewName.textContent = '';
-                return;
-            }
-
-            const objectUrl = URL.createObjectURL(file);
-
-            previewImage.src = objectUrl;
-            previewName.textContent = file.name;
-            previewCard.classList.remove('hidden');
-            previewEmpty.classList.add('hidden');
-
-            previewImage.onload = () => {
-                URL.revokeObjectURL(objectUrl);
-            };
-        });
-    });
-</script>
+</section>

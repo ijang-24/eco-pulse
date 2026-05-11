@@ -1,0 +1,189 @@
+187 matches in 180 files:
+
+./.../generator-build/index.js:54:devDependencies: {
+./.../generator-build/index.js:3341:devDependencies: {
+./node_modules/@prisma/client/package.json:160:"devDependencies": {
+./node_modules/@prisma/client/runtime/binary.js:4:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/@prisma/client/runtime/edge-esm.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/@prisma/client/runtime/edge.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/@prisma/client/runtime/library.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./.../runtime/react-native.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/@prisma/client/runtime/wasm.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/@prisma/debug/package.json:16:"devDependencies": {
+./.../engines-version/package.json:16:"devDependencies": {
+./node_modules/@prisma/engines/package.json:14:"devDependencies": {
+./.../dist/chunk-2BCLJS3M.js:2027:devDependencies: {
+./.../dist/chunk-KJ74H3SQ.js:2027:devDependencies: {
+./node_modules/@prisma/fetch-engine/package.json:17:"devDependencies": {
+./node_modules/@prisma/get-platform/package.json:16:"devDependencies": {
+./node_modules/@supabase/auth-js/package.json:38:"devDependencies": {
+./node_modules/@supabase/functions-js/package.json:40:"devDependencies": {
+./node_modules/@supabase/phoenix/package.json:34:"devDependencies": {
+./node_modules/@supabase/postgrest-js/package.json:57:"devDependencies": {
+./node_modules/@supabase/realtime-js/package.json:46:"devDependencies": {
+./.../cookie/package.json:34:"devDependencies": {
+./node_modules/@supabase/ssr/package.json:36:"devDependencies": {
+./node_modules/@supabase/storage-js/package.json:51:"devDependencies": {
+./node_modules/@supabase/supabase-js/package.json:89:"devDependencies": {
+./node_modules/accepts/package.json:15:"devDependencies": {
+./node_modules/anymatch/package.json:41:"devDependencies": {
+./node_modules/append-field/package.json:7:"devDependencies": {
+./node_modules/aws-ssl-profiles/package.json:15:"devDependencies": {
+./node_modules/balanced-match/package.json:39:"devDependencies": {
+./node_modules/binary-extensions/package.json:35:"devDependencies": {
+./node_modules/body-parser/package.json:26:"devDependencies": {
+./node_modules/brace-expansion/package.json:35:"devDependencies": {
+./node_modules/braces/package.json:34:"devDependencies": {
+./node_modules/buffer-from/package.json:12:"devDependencies": {
+./node_modules/busboy/package.json:9:"devDependencies": {
+./node_modules/bytes/package.json:21:"devDependencies": {
+./node_modules/call-bind-apply-helpers/README.md:53:...s-url]: https://david-dm.org/ljharb/call-bind-apply-helpers#info=devDependencies
+./.../call-bind-apply-helpers/package.json:43:"devDependencies": {
+./node_modules/call-bound/README.md:44:[dev-deps-url]: https://david-dm.org/ljharb/call-bound#info=devDependencies
+./node_modules/call-bound/package.json:57:"devDependencies": {
+./node_modules/chokidar/package.json:28:"devDependencies": {
+./node_modules/concat-stream/package.json:36:"devDependencies": {
+./node_modules/connect-flash/package.json:25:"devDependencies": {
+./node_modules/content-disposition/package.json:18:"devDependencies": {
+./node_modules/content-type/package.json:15:"devDependencies": {
+./node_modules/cookie-signature/package.json:17:"devDependencies": {
+./node_modules/cookie/package.json:15:"devDependencies": {
+./node_modules/debug/package.json:36:"devDependencies": {
+./node_modules/denque/package.json:50:"devDependencies": {
+./node_modules/depd/package.json:13:"devDependencies": {
+./node_modules/dotenv/CHANGELOG.md:299:...Development ONLY: updated devDependencies as recommended for development only se...
+./node_modules/dotenv/package.json:47:"devDependencies": {
+./node_modules/dunder-proto/README.md:45:[dev-deps-url]: https://david-dm.org/es-shims/dunder-proto#info=devDependencies
+./node_modules/dunder-proto/package.json:41:"devDependencies": {
+./node_modules/ee-first/package.json:16:"devDependencies": {
+./node_modules/ejs/package.json:31:"devDependencies": {
+./node_modules/encodeurl/package.json:15:"devDependencies": {
+./node_modules/es-define-property/README.md:40:...v-deps-url]: https://david-dm.org/ljharb/es-define-property#info=devDependencies
+./node_modules/es-define-property/package.json:45:"devDependencies": {
+./node_modules/es-errors/README.md:46:[dev-deps-url]: https://david-dm.org/ljharb/es-errors#info=devDependencies
+./node_modules/es-errors/package.json:49:"devDependencies": {
+./node_modules/es-object-atoms/README.md:54:[dev-deps-url]: https://david-dm.org/ljharb/es-object-atoms#info=devDependencies
+./node_modules/es-object-atoms/package.json:48:"devDependencies": {
+./node_modules/escape-html/package.json:12:"devDependencies": {
+./node_modules/etag/package.json:16:"devDependencies": {
+./node_modules/express-ejs-layouts/package.json:12:"devDependencies": {
+./.../cookie-signature/package.json:10:"devDependencies": {
+./.../debug/package.json:23:"devDependencies": {
+./.../ms/package.json:30:"devDependencies": {
+./node_modules/express-session/package.json:26:"devDependencies": {
+./node_modules/express/package.json:64:"devDependencies": {
+./node_modules/fill-range/package.json:36:"devDependencies": {
+./node_modules/finalhandler/package.json:20:"devDependencies": {
+./node_modules/forwarded/package.json:15:"devDependencies": {
+./node_modules/fresh/package.json:18:"devDependencies": {
+./node_modules/function-bind/README.md:37:[dev-deps-url]: https://david-dm.org/Raynos/function-bind#info=devDependencies
+./node_modules/function-bind/package.json:34:"devDependencies": {
+./node_modules/generate-function/package.json:26:"devDependencies": {
+./node_modules/get-intrinsic/README.md:62:[dev-deps-url]: https://david-dm.org/ljharb/get-intrinsic#info=devDependencies
+./node_modules/get-intrinsic/package.json:58:"devDependencies": {
+./node_modules/get-proto/README.md:41:[dev-deps-url]: https://david-dm.org/ljharb/get-proto#info=devDependencies
+./node_modules/get-proto/package.json:47:"devDependencies": {
+./node_modules/glob-parent/package.json:30:"devDependencies": {
+./node_modules/gopd/README.md:31:[dev-deps-url]: https://david-dm.org/ljharb/gopd#info=devDependencies
+./node_modules/gopd/package.json:46:"devDependencies": {
+./node_modules/has-flag/package.json:40:"devDependencies": {
+./node_modules/has-symbols/README.md:37:[8]: https://david-dm.org/inspect-js/has-symbols#info=devDependencies
+./node_modules/has-symbols/package.json:58:"devDependencies": {
+./node_modules/hasown/README.md:31:[dev-deps-url]: https://david-dm.org/inspect-js/hasOwn#info=devDependencies
+./node_modules/hasown/package.json:53:"devDependencies": {
+./node_modules/http-errors/package.json:23:"devDependencies": {
+./node_modules/iceberg-js/package.json:59:"devDependencies": {
+./node_modules/iconv-lite/package.json:48:"devDependencies": {
+./node_modules/ignore-by-default/package.json:30:"devDependencies": {
+./node_modules/inherits/package.json:22:"devDependencies": {
+./node_modules/ipaddr.js/package.json:10:"devDependencies": {
+./node_modules/is-binary-path/package.json:35:"devDependencies": {
+./node_modules/is-extglob/package.json:22:"devDependencies": {
+./node_modules/is-glob/package.json:30:"devDependencies": {
+./node_modules/is-number/package.json:27:"devDependencies": {
+./node_modules/is-property/package.json:10:"devDependencies": {
+./node_modules/long/package.json:53:"devDependencies": {
+./node_modules/lru.min/package.json:45:"devDependencies": {
+./node_modules/math-intrinsics/README.md:41:...ev-deps-url]: https://david-dm.org/es-shims/math-intrinsics#info=devDependencies
+./node_modules/math-intrinsics/package.json:49:"devDependencies": {
+./node_modules/media-typer/package.json:8:"devDependencies": {
+./node_modules/merge-descriptors/package.json:41:"devDependencies": {
+./node_modules/mime-db/package.json:21:"devDependencies": {
+./node_modules/mime-types/package.json:23:"devDependencies": {
+./node_modules/minimatch/package.json:47:"devDependencies": {
+./node_modules/ms/package.json:30:"devDependencies": {
+./.../media-typer/package.json:8:"devDependencies": {
+./.../mime-db/package.json:21:"devDependencies": {
+./.../mime-types/package.json:19:"devDependencies": {
+./.../type-is/package.json:15:"devDependencies": {
+./node_modules/multer/package.json:31:"devDependencies": {
+./node_modules/mysql2/package.json:68:"devDependencies": {
+./node_modules/named-placeholders/package.json:32:"devDependencies": {
+./node_modules/negotiator/package.json:20:"devDependencies": {
+./node_modules/nodemon/package.json:45:"devDependencies": {
+./node_modules/normalize-path/package.json:26:"devDependencies": {
+./node_modules/object-inspect/package.json:7:"devDependencies": {
+./node_modules/object-inspect/readme.markdown:75:...v-deps-url]: https://david-dm.org/inspect-js/object-inspect#info=devDependencies
+./node_modules/on-finished/package.json:14:"devDependencies": {
+./node_modules/on-headers/package.json:14:"devDependencies": {
+./node_modules/once/package.json:12:"devDependencies": {
+./node_modules/parseurl/package.json:11:"devDependencies": {
+./node_modules/path-to-regexp/package.json:36:"devDependencies": {
+./node_modules/picomatch/package.json:28:"devDependencies": {
+./node_modules/prisma/build/index.js:19:...ors/engines/*","scripts"],devDependencies:{"@antfu/ni":"0.21.12","@babel/helper-...
+./node_modules/prisma/build/index.js:30:...dencies",devEependencies:"devDependencies",depends:"dependencies","dev-dependenc...
+./node_modules/prisma/build/index.js:56:...ssues",enginesOverride:{},devDependencies:{"@swc/core":"1.6.13","@swc/jest":"0.2...
+./node_modules/prisma/build/index.js:169:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/prisma/build/index.js:187:...{prisma:"build/index.js"},devDependencies:{"@prisma/client":"workspace:*","@pris...
+./node_modules/prisma/build/index.js:1262:...es?.["@prisma/client"]??i.devDependencies?.["@prisma/client"];return a||null}cat...
+./node_modules/prisma/package.json:71:"devDependencies": {
+./.../generator-build/index.js:54:devDependencies: {
+./.../generator-build/index.js:3341:devDependencies: {
+./node_modules/prisma/prisma-client/package.json:175:"devDependencies": {
+./.../runtime/binary.js:4:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./.../runtime/edge-esm.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./.../runtime/edge.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./.../runtime/library.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./.../runtime/react-native.js:1:...ackages/engines-version"},devDependencies:{"@types/node":"18.19.34",typescript:"...
+./node_modules/proxy-addr/package.json:17:"devDependencies": {
+./node_modules/pstree.remy/package.json:25:"devDependencies": {
+./node_modules/qs/README.md:743:[dev-deps-url]: https://david-dm.org/ljharb/qs#info=devDependencies
+./node_modules/qs/package.json:36:"devDependencies": {
+./node_modules/random-bytes/package.json:10:"devDependencies": {
+./node_modules/range-parser/package.json:18:"devDependencies": {
+./node_modules/raw-body/package.json:18:"devDependencies": {
+./node_modules/readable-stream/package.json:14:"devDependencies": {
+./node_modules/readdirp/package.json:47:"devDependencies": {
+./node_modules/router/package.json:18:"devDependencies": {
+./node_modules/safe-buffer/package.json:13:"devDependencies": {
+./node_modules/safer-buffer/package.json:23:"devDependencies": {
+./node_modules/semver/package.json:16:"devDependencies": {
+./node_modules/send/package.json:35:"devDependencies": {
+./node_modules/serve-static/package.json:18:"devDependencies": {
+./node_modules/setprototypeof/package.json:34:"devDependencies": {
+./node_modules/side-channel-list/README.md:53:...ev-deps-url]: https://david-dm.org/ljharb/side-channel-list#info=devDependencies
+./node_modules/side-channel-list/package.json:43:"devDependencies": {
+./node_modules/side-channel-map/README.md:53:...dev-deps-url]: https://david-dm.org/ljharb/side-channel-map#info=devDependencies
+./node_modules/side-channel-map/package.json:45:"devDependencies": {
+./node_modules/side-channel-weakmap/README.md:53:...deps-url]: https://david-dm.org/ljharb/side-channel-weakmap#info=devDependencies
+./node_modules/side-channel-weakmap/package.json:52:"devDependencies": {
+./node_modules/side-channel/README.md:52:[dev-deps-url]: https://david-dm.org/ljharb/side-channel#info=devDependencies
+./node_modules/side-channel/package.json:52:"devDependencies": {
+./node_modules/simple-update-notifier/package.json:30:"devDependencies": {
+./node_modules/sql-escaper/package.json:41:"devDependencies": {
+./node_modules/statuses/package.json:22:"devDependencies": {
+./node_modules/streamsearch/package.json:10:"devDependencies": {
+./node_modules/string_decoder/package.json:12:"devDependencies": {
+./node_modules/supports-color/package.json:47:"devDependencies": {
+./node_modules/to-regex-range/package.json:29:"devDependencies": {
+./node_modules/toidentifier/package.json:11:"devDependencies": {
+./node_modules/touch/package.json:17:"devDependencies": {
+./node_modules/type-is/package.json:16:"devDependencies": {
+./node_modules/typedarray/package.json:6:"devDependencies": {
+./node_modules/uid-safe/package.json:14:"devDependencies": {
+./node_modules/undefsafe/package.json:27:"devDependencies": {
+./node_modules/unpipe/package.json:8:"devDependencies": {
+./node_modules/vary/package.json:13:"devDependencies": {
+./node_modules/wrappy/package.json:13:"devDependencies": {
+./package-lock.json:23:"devDependencies": {
+./package.json:28:"devDependencies": {
