@@ -5,7 +5,7 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const flash = require('connect-flash');
 const multer = require('multer');
-const db = require('./src/models/db');
+const prisma = require('./src/utils/prisma');
 
 // Multer Config
 const storage = multer.diskStorage({
@@ -69,12 +69,29 @@ app.get('/', (req, res) => {
 
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     try {
-        const [user] = await db.query('SELECT * FROM users WHERE id = ?', [req.session.user.id]);
-        const [logs] = await db.query('SELECT * FROM waste_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 5', [req.session.user.id]);
+        const user = await prisma.users.findUnique({
+            where: { id: req.session.user.id }
+        });
+
+        const logs = await prisma.waste_logs.findMany({
+            where: { user_id: req.session.user.id },
+            orderBy: { created_at: 'desc' },
+            take: 5
+        });
+
+        if (!user) {
+            req.session.destroy();
+            return res.redirect('/login');
+        }
+
+        // Map address fields for view
+        user.rt = user.address_rt;
+        user.rw = user.address_rw;
+
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
-            user: user[0],
-            logs: logs
+            user: user,
+            logs: logs || []
         });
     } catch (err) {
         console.error('Dashboard Error:', err);
@@ -98,9 +115,15 @@ app.get('/login', (req, res) => {
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
     try {
-        const [users] = await db.query('SELECT * FROM users WHERE email = ? AND password = ?', [email, password]);
-        if (users.length > 0) {
-            req.session.user = users[0];
+        const user = await prisma.users.findFirst({
+            where: { email, password }
+        });
+
+        if (user) {
+            // Map address fields
+            user.rt = user.address_rt;
+            user.rw = user.address_rw;
+            req.session.user = user;
             req.flash('success_msg', 'Successfully logged in!');
             res.redirect('/dashboard');
         } else {
@@ -121,7 +144,17 @@ app.get('/register', (req, res) => {
 app.post('/register', async (req, res) => {
     const { username, email, password, rt, rw, role } = req.body;
     try {
-        await db.query('INSERT INTO users (username, email, password, rt, rw, role) VALUES (?, ?, ?, ?, ?, ?)', [username, email, password, rt, rw, role || 'citizen']);
+        await prisma.users.create({
+            data: {
+                username,
+                email,
+                password,
+                address_rt: rt,
+                address_rw: rw,
+                role: role || 'citizen'
+            }
+        });
+
         req.flash('success_msg', 'Registration successful! Please login.');
         res.redirect('/login');
     } catch (err) {
@@ -138,11 +171,29 @@ app.get('/waste/track', isAuthenticated, (req, res) => {
 app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, res) => {
     const { waste_type, weight } = req.body;
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
-    const points = Math.floor(weight * 20); // 20 points per kg
+    const points = Math.floor(parseFloat(weight) * 20); // 20 points per kg
     try {
-        await db.query('INSERT INTO waste_logs (user_id, waste_type, weight, photo_url, points_earned) VALUES (?, ?, ?, ?, ?)', 
-            [req.session.user.id, waste_type, weight, photo_url, points]);
-        await db.query('UPDATE users SET total_points = total_points + ? WHERE id = ?', [points, req.session.user.id]);
+        await prisma.$transaction(async (tx) => {
+            await tx.waste_logs.create({
+                data: {
+                    user_id: req.session.user.id,
+                    waste_type,
+                    weight: parseFloat(weight),
+                    photo_url,
+                    points_earned: points
+                }
+            });
+
+            await tx.users.update({
+                where: { id: req.session.user.id },
+                data: {
+                    total_points: {
+                        increment: points
+                    }
+                }
+            });
+        });
+
         req.flash('success_msg', `Waste logged successfully! You earned ${points} points.`);
         res.redirect('/dashboard');
     } catch (err) {
@@ -155,13 +206,24 @@ app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, re
 // Admin Routes
 app.get('/admin/dashboard', isAdmin, async (req, res) => {
     try {
-        const [logs] = await db.query(`
-            SELECT waste_logs.*, users.username, users.rt, users.rw 
-            FROM waste_logs 
-            JOIN users ON waste_logs.user_id = users.id 
-            ORDER BY created_at DESC
-        `);
-        res.render('admin_dashboard', { title: 'Admin Panel | Eco-Pulse', logs: logs });
+        const logs = await prisma.waste_logs.findMany({
+            include: {
+                user: true
+            },
+            orderBy: {
+                created_at: 'desc'
+            }
+        });
+
+        // Flatten logs for EJS compatibility
+        const flattenedLogs = logs.map(log => ({
+            ...log,
+            username: log.user.username,
+            rt: log.user.address_rt,
+            rw: log.user.address_rw
+        }));
+
+        res.render('admin_dashboard', { title: 'Admin Panel | Eco-Pulse', logs: flattenedLogs });
     } catch (err) {
         console.error('Admin Dashboard Error:', err);
         req.flash('error_msg', 'Failed to load admin panel');
@@ -172,7 +234,11 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
 app.post('/admin/verify/:id', isAdmin, async (req, res) => {
     const { status } = req.body;
     try {
-        await db.query('UPDATE waste_logs SET status = ? WHERE id = ?', [status, req.params.id]);
+        await prisma.waste_logs.update({
+            where: { id: parseInt(req.params.id) },
+            data: { status: status }
+        });
+
         req.flash('success_msg', `Waste log marked as ${status}.`);
         res.redirect('/admin/dashboard');
     } catch (err) {
@@ -184,7 +250,10 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
 
 app.post('/admin/delete/:id', isAdmin, async (req, res) => {
     try {
-        await db.query('DELETE FROM waste_logs WHERE id = ?', [req.params.id]);
+        await prisma.waste_logs.delete({
+            where: { id: parseInt(req.params.id) }
+        });
+
         req.flash('success_msg', 'Waste log deleted successfully.');
         res.redirect('/admin/dashboard');
     } catch (err) {
