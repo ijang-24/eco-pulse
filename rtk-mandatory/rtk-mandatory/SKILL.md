@@ -11,9 +11,12 @@ This skill ensures that all CLI commands executed within the Gemini CLI environm
 
 ## Mandated Workflow
 
-1. **Prefix Commands**: For every shell command (especially `git`, `ls`, `cat`, etc.), always use the `rtk` proxy.
-   - Example: Use `rtk git status` instead of `git status`.
-   - Example: Use `rtk ls -la` instead of `ls -la`.
+1. **Prefix All Commands**: For EVERY shell command, especially those involving file I/O or search, always use the `rtk` proxy to save tokens.
+   - **Source Control**: Use `rtk git status`, `rtk git diff`.
+   - **Navigation/Listing**: Use `rtk ls -la`, `rtk find .`.
+   - **Reading Files**: Use `rtk cat <file>`, `rtk head <file>`, `rtk tail <file>`.
+   - **Searching Content**: Use `rtk grep -r "pattern" .`, `rtk rg "pattern"`.
+   - **File Modification**: Use `rtk sed`, `rtk awk`, or `rtk echo "content" > file`.
 
 2. **Monitor Savings**: Regularly check token savings using `rtk gain`.
    - `rtk gain`: Show token savings analytics.
@@ -34,5 +37,6 @@ This skill ensures that all CLI commands executed within the Gemini CLI environm
 
 ## Guidelines
 
+- **Token Efficiency**: The primary goal is to minimize token usage for every single turn. Using `rtk` is the standard operating procedure for all CLI interactions.
 - **Consistency**: Never execute a standard CLI command without the `rtk` prefix unless explicitly debugging a proxy issue.
 - **Reporting**: When reporting progress to the user, occasionally mention the token savings achieved via `rtk gain` if significant.

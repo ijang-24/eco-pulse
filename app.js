@@ -116,7 +116,11 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
             user: user,
-            logs: logs || []
+            logs: logs || [],
+            impact: {
+                co2: totalCO2.toFixed(2),
+                trees: totalTrees.toFixed(3)
+            }
         });
     } catch (err) {
         console.error('Dashboard Error:', err);
@@ -129,8 +133,52 @@ app.get('/leaderboard', (req, res) => {
     res.render('leaderboard', { title: 'Leaderboard | Eco-Pulse' });
 });
 
-app.get('/rewards', (req, res) => {
-    res.render('rewards', { title: 'Rewards | Eco-Pulse' });
+app.get('/rewards', isAuthenticated, async (req, res) => {
+    try {
+        const rewards = await prisma.rewards.findMany({
+            where: { stock: { gt: 0 } }
+        });
+        res.render('rewards', { title: 'Rewards | Eco-Pulse', rewards });
+    } catch (err) {
+        console.error('Rewards Error:', err);
+        res.redirect('/dashboard');
+    }
+});
+
+app.post('/rewards/redeem/:id', isAuthenticated, async (req, res) => {
+    try {
+        const rewardId = parseInt(req.params.id);
+        const userId = req.session.user.id;
+
+        await prisma.$transaction(async (tx) => {
+            const user = await tx.users.findUnique({ where: { id: userId } });
+            const reward = await tx.rewards.findUnique({ where: { id: rewardId } });
+
+            if (!reward || reward.stock <= 0) throw new Error('Reward out of stock');
+            if (user.total_points < reward.points_cost) throw new Error('Insufficient points');
+
+            await tx.redemptions.create({
+                data: { user_id: userId, reward_id: rewardId, status: 'completed' }
+            });
+
+            await tx.users.update({
+                where: { id: userId },
+                data: { total_points: { decrement: reward.points_cost } }
+            });
+
+            await tx.rewards.update({
+                where: { id: rewardId },
+                data: { stock: { decrement: 1 } }
+            });
+        });
+
+        req.flash('success_msg', 'Reward redeemed successfully!');
+        res.redirect('/dashboard');
+    } catch (err) {
+        console.error('Redeem Error:', err);
+        req.flash('error_msg', err.message);
+        res.redirect('/rewards');
+    }
 });
 
 app.get('/login', (req, res) => {
@@ -221,11 +269,38 @@ app.get('/waste/track', isAuthenticated, (req, res) => {
 app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, res) => {
     const { waste_type, weight } = req.body;
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
-    const points = Math.floor(parseFloat(weight) * 20); // 20 points per kg
+    
     try {
-        await db.query('INSERT INTO waste_logs (user_id, waste_type, weight, photo_url, points_earned) VALUES (?, ?, ?, ?, ?)', 
-            [req.session.user.id, waste_type, weight, photo_url, points]);
-        req.flash('success_msg', `Waste logged successfully! Your log is pending admin review. Potential points: ${points}.`);
+        const config = await prisma.point_configs.findUnique({
+            where: { waste_type }
+        });
+
+        if (!config) throw new Error('Invalid waste type');
+
+        const points = Math.floor(parseFloat(weight) * config.points_per_kg);
+
+        await prisma.$transaction(async (tx) => {
+            await tx.waste_logs.create({
+                data: {
+                    user_id: req.session.user.id,
+                    waste_type,
+                    weight: parseFloat(weight),
+                    photo_url,
+                    points_earned: points
+                }
+            });
+
+            await tx.users.update({
+                where: { id: req.session.user.id },
+                data: {
+                    total_points: {
+                        increment: points
+                    }
+                }
+            });
+        });
+
+        req.flash('success_msg', `Waste logged successfully! You earned ${points} points.`);
         res.redirect('/dashboard');
     } catch (err) {
         console.error('Waste Tracking Error:', err);
