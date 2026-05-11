@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) NOT NULL,
     email VARCHAR(100) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    address_rt VARCHAR(10),
+    rt VARCHAR(10) NOT NULL,
+    rw VARCHAR(10) NOT NULL,
+    role ENUM('citizen', 'admin') DEFAULT 'citizen',
     total_points INT DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

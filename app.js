@@ -5,7 +5,8 @@ const expressLayouts = require('express-ejs-layouts');
 const session = require('express-session');
 const flash = require('connect-flash');
 const multer = require('multer');
-const prisma = require('./src/utils/prisma');
+const db = require('./src/models/db');
+const { hashPassword, verifyHashedPassword, isPasswordHashed } = require('./src/models/password');
 
 // Multer Config
 const storage = multer.diskStorage({
@@ -20,6 +21,31 @@ const upload = multer({ storage: storage });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const ALLOWED_ROLES = new Set(['citizen', 'admin']);
+
+const createSessionUser = (user) => ({
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    role: user.role,
+    rt: user.rt,
+    rw: user.rw
+});
+
+const normalizeText = (value) => typeof value === 'string' ? value.trim() : '';
+
+const parseEntityId = (value) => {
+    const id = Number.parseInt(value, 10);
+    return Number.isInteger(id) && id > 0 ? id : null;
+};
+
+const getDbErrorMessage = (err, fallbackMessage) => {
+    if (err && err.code === 'ER_DUP_ENTRY') {
+        return 'Email sudah terdaftar. Gunakan email lain atau login.';
+    }
+
+    return fallbackMessage;
+};
 
 // Middleware
 app.use(express.static('public'));
@@ -35,6 +61,7 @@ app.use(flash());
 // Global user variable for templates
 app.use((req, res, next) => {
     res.locals.user = req.session.user || null;
+    res.locals.isAdminArea = req.path.startsWith('/admin');
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     next();
@@ -69,24 +96,22 @@ app.get('/', (req, res) => {
 
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     try {
-        const user = await prisma.users.findUnique({
-            where: { id: req.session.user.id }
-        });
+        const [user] = await db.query('SELECT * FROM users WHERE id = ?', [req.session.user.id]);
+        const [logs] = await db.query('SELECT * FROM waste_logs WHERE user_id = ? ORDER BY created_at DESC LIMIT 5', [req.session.user.id]);
+        const [pointsRows] = await db.query(
+            'SELECT COALESCE(SUM(points_earned), 0) AS total_points FROM waste_logs WHERE user_id = ? AND status = "verified"',
+            [req.session.user.id]
+        );
 
-        const logs = await prisma.waste_logs.findMany({
-            where: { user_id: req.session.user.id },
-            orderBy: { created_at: 'desc' },
-            take: 5
-        });
+        const totalPoints = pointsRows[0]?.total_points || 0;
 
-        if (!user) {
-            req.session.destroy();
-            return res.redirect('/login');
+        if (user[0] && Number(user[0].total_points || 0) !== Number(totalPoints)) {
+            await db.query('UPDATE users SET total_points = ? WHERE id = ?', [totalPoints, req.session.user.id]);
         }
 
-        // Map address fields for view
-        user.rt = user.address_rt;
-        user.rw = user.address_rw;
+        if (user[0]) {
+            user[0].total_points = totalPoints;
+        }
 
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
@@ -113,26 +138,46 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const user = await prisma.users.findFirst({
-            where: { email, password }
-        });
+    const email = normalizeText(req.body.email).toLowerCase();
+    const password = req.body.password || '';
 
-        if (user) {
-            // Map address fields
-            user.rt = user.address_rt;
-            user.rw = user.address_rw;
-            req.session.user = user;
-            req.flash('success_msg', 'Successfully logged in!');
-            res.redirect('/dashboard');
-        } else {
+    if (!email || !password) {
+        req.flash('error_msg', 'Email dan password wajib diisi.');
+        return res.redirect('/login');
+    }
+
+    try {
+        const [users] = await db.query('SELECT * FROM users WHERE email = ? LIMIT 1', [email]);
+        const user = users[0];
+
+        if (!user) {
             req.flash('error_msg', 'Invalid email or password');
-            res.redirect('/login');
+            return res.redirect('/login');
         }
+
+        let passwordMatches = false;
+
+        if (isPasswordHashed(user.password)) {
+            passwordMatches = await verifyHashedPassword(password, user.password);
+        } else if (user.password === password) {
+            passwordMatches = true;
+
+            const hashedPassword = await hashPassword(password);
+            await db.query('UPDATE users SET password = ? WHERE id = ?', [hashedPassword, user.id]);
+            user.password = hashedPassword;
+        }
+
+        if (!passwordMatches) {
+            req.flash('error_msg', 'Invalid email or password');
+            return res.redirect('/login');
+        }
+
+        req.session.user = createSessionUser(user);
+        req.flash('success_msg', 'Successfully logged in!');
+        res.redirect(user.role === 'admin' ? '/admin/dashboard' : '/dashboard');
     } catch (err) {
         console.error('Login Error:', err);
-        req.flash('error_msg', 'Login system error');
+        req.flash('error_msg', getDbErrorMessage(err, 'Login system error'));
         res.redirect('/login');
     }
 });
@@ -142,24 +187,29 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    const { username, email, password, rt, rw, role } = req.body;
-    try {
-        await prisma.users.create({
-            data: {
-                username,
-                email,
-                password,
-                address_rt: rt,
-                address_rw: rw,
-                role: role || 'citizen'
-            }
-        });
+    const username = normalizeText(req.body.username);
+    const email = normalizeText(req.body.email).toLowerCase();
+    const password = req.body.password || '';
+    const rt = normalizeText(req.body.rt);
+    const rw = normalizeText(req.body.rw);
+    const role = ALLOWED_ROLES.has(req.body.role) ? req.body.role : 'citizen';
 
+    if (!username || !email || !password || !rt || !rw) {
+        req.flash('error_msg', 'Semua field wajib diisi.');
+        return res.redirect('/register');
+    }
+
+    try {
+        const hashedPassword = await hashPassword(password);
+        await db.query(
+            'INSERT INTO users (username, email, password, rt, rw, role) VALUES (?, ?, ?, ?, ?, ?)',
+            [username, email, hashedPassword, rt, rw, role]
+        );
         req.flash('success_msg', 'Registration successful! Please login.');
         res.redirect('/login');
     } catch (err) {
         console.error('Registration Error:', err);
-        req.flash('error_msg', 'Registration failed: ' + err.message);
+        req.flash('error_msg', getDbErrorMessage(err, 'Registration failed. Please try again.'));
         res.redirect('/register');
     }
 });
@@ -173,28 +223,9 @@ app.post('/waste/track', isAuthenticated, upload.single('photo'), async (req, re
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
     const points = Math.floor(parseFloat(weight) * 20); // 20 points per kg
     try {
-        await prisma.$transaction(async (tx) => {
-            await tx.waste_logs.create({
-                data: {
-                    user_id: req.session.user.id,
-                    waste_type,
-                    weight: parseFloat(weight),
-                    photo_url,
-                    points_earned: points
-                }
-            });
-
-            await tx.users.update({
-                where: { id: req.session.user.id },
-                data: {
-                    total_points: {
-                        increment: points
-                    }
-                }
-            });
-        });
-
-        req.flash('success_msg', `Waste logged successfully! You earned ${points} points.`);
+        await db.query('INSERT INTO waste_logs (user_id, waste_type, weight, photo_url, points_earned) VALUES (?, ?, ?, ?, ?)', 
+            [req.session.user.id, waste_type, weight, photo_url, points]);
+        req.flash('success_msg', `Waste logged successfully! Your log is pending admin review. Potential points: ${points}.`);
         res.redirect('/dashboard');
     } catch (err) {
         console.error('Waste Tracking Error:', err);
@@ -232,19 +263,70 @@ app.get('/admin/dashboard', isAdmin, async (req, res) => {
 });
 
 app.post('/admin/verify/:id', isAdmin, async (req, res) => {
-    const { status } = req.body;
-    try {
-        await prisma.waste_logs.update({
-            where: { id: parseInt(req.params.id) },
-            data: { status: status }
-        });
+    const logId = parseEntityId(req.params.id);
+    const status = normalizeText(req.body.status);
 
+    if (!logId) {
+        req.flash('error_msg', 'ID log tidak valid.');
+        return res.redirect('/admin/dashboard');
+    }
+
+    if (!['verified', 'rejected'].includes(status)) {
+        req.flash('error_msg', 'Status verifikasi tidak valid.');
+        return res.redirect('/admin/dashboard');
+    }
+
+    let connection;
+
+    try {
+        connection = await db.getConnection();
+        await connection.beginTransaction();
+
+        const [rows] = await connection.query(
+            'SELECT id, user_id, status, points_earned FROM waste_logs WHERE id = ? FOR UPDATE',
+            [logId]
+        );
+
+        const log = rows[0];
+
+        if (!log) {
+            await connection.rollback();
+            req.flash('error_msg', 'Log tidak ditemukan.');
+            return res.redirect('/admin/dashboard');
+        }
+
+        let pointsDelta = 0;
+        if (log.status !== 'verified' && status === 'verified') {
+            pointsDelta = log.points_earned;
+        } else if (log.status === 'verified' && status === 'rejected') {
+            pointsDelta = -log.points_earned;
+        } else if (log.status === 'rejected' && status === 'verified') {
+            pointsDelta = log.points_earned;
+        }
+
+        await connection.query('UPDATE waste_logs SET status = ? WHERE id = ?', [status, logId]);
+
+        if (pointsDelta !== 0) {
+            await connection.query(
+                'UPDATE users SET total_points = GREATEST(total_points + ?, 0) WHERE id = ?',
+                [pointsDelta, log.user_id]
+            );
+        }
+
+        await connection.commit();
         req.flash('success_msg', `Waste log marked as ${status}.`);
         res.redirect('/admin/dashboard');
     } catch (err) {
+        if (connection) {
+            await connection.rollback();
+        }
         console.error('Verify Error:', err);
         req.flash('error_msg', 'Failed to update status');
         res.redirect('/admin/dashboard');
+    } finally {
+        if (connection) {
+            connection.release();
+        }
     }
 });
 

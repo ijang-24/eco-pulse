@@ -4,11 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="/css/style.css">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(74, 222, 128, 0.18), transparent 28%),
+                radial-gradient(circle at top right, rgba(56, 189, 248, 0.14), transparent 24%),
+                radial-gradient(circle at bottom right, rgba(251, 191, 36, 0.12), transparent 20%),
+                linear-gradient(180deg, #fbfffd 0%, #f3fbf6 46%, #eef8ff 100%);
+        }
+    </style>
 </head>
-<body class="bg-gray-50 text-gray-900 font-sans">
+<body class="text-slate-900">
     
     <!-- Notification Script -->
     <script>
@@ -37,38 +50,72 @@
     </script>
     
     <!-- Navigation -->
-    <nav class="bg-green-600 text-white shadow-md">
-        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-            <a href="/" class="text-2xl font-bold flex items-center gap-2">
-                <span>🌱</span> Eco-Pulse
-            </a>
-            <div class="space-x-6">
-                <a href="/dashboard" class="hover:underline">Dashboard</a>
-                <a href="/leaderboard" class="hover:underline">Leaderboard</a>
-                <a href="/rewards" class="hover:underline">Rewards</a>
-                <% if (user) { %>
-                    <% if (user.role === 'admin') { %>
-                        <a href="/admin/dashboard" class="text-yellow-300 font-bold hover:underline">Admin Panel</a>
+    <nav class="sticky top-0 z-40 border-b <%= isAdminArea ? 'border-amber-100/80 bg-[rgba(255,251,235,0.9)] shadow-[0_10px_30px_rgba(251,191,36,0.10)]' : 'border-emerald-100/80 bg-white/82 shadow-[0_10px_30px_rgba(34,197,94,0.08)]' %> backdrop-blur-xl">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+                <a href="/" class="flex items-center gap-4">
+                    <span class="relative flex h-12 w-12 shrink-0 items-center justify-center rounded-full <%= isAdminArea ? 'bg-gradient-to-br from-amber-200 via-orange-100 to-rose-100 shadow-[0_12px_26px_rgba(251,191,36,0.18)]' : 'bg-gradient-to-br from-emerald-200 via-lime-100 to-sky-100 shadow-[0_12px_26px_rgba(34,197,94,0.18)]' %> ring-1 ring-white/80">
+                        <span class="absolute h-6 w-6 -rotate-12 rounded-tl-[100%] rounded-tr-[20%] rounded-bl-[20%] rounded-br-[100%] <%= isAdminArea ? 'bg-amber-700' : 'bg-emerald-600' %>"></span>
+                        <span class="absolute right-[11px] top-[12px] h-4 w-1 rounded-full bg-white/90 rotate-[28deg]"></span>
+                        <span class="absolute bottom-[10px] h-1.5 w-6 rounded-full <%= isAdminArea ? 'bg-orange-300/90' : 'bg-lime-300/90' %>"></span>
+                    </span>
+                    <span>
+                        <span class="block text-[11px] font-bold uppercase tracking-[0.28em] <%= isAdminArea ? 'text-amber-700' : 'text-emerald-600' %>"><%= isAdminArea ? 'Admin Review System' : 'Community Impact System' %></span>
+                        <span class="block text-2xl font-extrabold tracking-tight text-slate-950">Eco-Pulse</span>
+                    </span>
+                </a>
+
+                <div class="flex flex-col gap-3 xl:flex-row xl:items-center">
+                    <div class="flex flex-wrap items-center gap-2 rounded-full <%= isAdminArea ? 'border-amber-100 bg-white/95 shadow-[0_8px_24px_rgba(251,191,36,0.08)]' : 'border-emerald-100 bg-white/90 shadow-[0_8px_24px_rgba(34,197,94,0.06)]' %> p-2 text-sm font-semibold text-slate-600">
+                        <a href="/dashboard" class="rounded-full px-4 py-2 transition <%= isAdminArea ? 'hover:bg-amber-50 hover:text-amber-800' : 'hover:bg-emerald-50 hover:text-emerald-800' %>">Dashboard</a>
+                        <a href="/leaderboard" class="rounded-full px-4 py-2 transition hover:bg-sky-50 hover:text-sky-800">Leaderboard</a>
+                        <a href="/rewards" class="rounded-full px-4 py-2 transition hover:bg-amber-50 hover:text-amber-800">Rewards</a>
+                        <% if (user && user.role === 'admin') { %>
+                            <a href="/admin/dashboard" class="rounded-full <%= isAdminArea ? 'bg-slate-900 text-white hover:bg-slate-800' : 'bg-amber-200 text-amber-950 hover:bg-amber-300' %> px-4 py-2 font-bold transition">Admin Panel</a>
+                        <% } %>
+                    </div>
+
+                    <% if (user) { %>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <div class="rounded-full border border-emerald-100 bg-white px-4 py-2.5 text-sm text-slate-600 shadow-[0_8px_20px_rgba(34,197,94,0.06)]">
+                                <span class="font-semibold text-slate-900"><%= user.username %></span>
+                                <span class="mx-2 text-slate-300">/</span>
+                                <span class="uppercase tracking-[0.12em] text-xs"><%= user.role %></span>
+                            </div>
+                            <a href="/logout" class="rounded-full bg-gradient-to-r from-emerald-600 to-lime-500 px-5 py-2.5 text-sm font-bold text-white transition hover:from-emerald-700 hover:to-lime-600">Logout</a>
+                        </div>
+                    <% } else { %>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <a href="/login" class="rounded-full border border-emerald-100 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800">Login</a>
+                            <a href="/register" class="rounded-full bg-gradient-to-r from-emerald-600 to-lime-500 px-5 py-2.5 text-sm font-bold text-white transition hover:from-emerald-700 hover:to-lime-600">Register</a>
+                        </div>
                     <% } %>
-                    <span class="text-green-200">Hello, <%= user.username %>!</span>
-                    <a href="/logout" class="bg-red-500 text-white px-4 py-2 rounded-full font-semibold hover:bg-red-600 transition">Logout</a>
-                <% } else { %>
-                    <a href="/login" class="hover:underline">Login</a>
-                    <a href="/register" class="bg-white text-green-600 px-4 py-2 rounded-full font-semibold hover:bg-green-50 transition">Register</a>
-                <% } %>
+                </div>
             </div>
         </div>
     </nav>
 
+    <% if (isAdminArea) { %>
+        <div class="border-b border-amber-100 bg-gradient-to-r from-amber-100 via-orange-50 to-rose-50">
+            <div class="container mx-auto flex flex-col gap-2 px-6 py-3 text-sm font-semibold text-amber-900 lg:flex-row lg:items-center lg:justify-between">
+                <span class="uppercase tracking-[0.18em]">Admin Mode Active</span>
+                <span>Anda sedang berada di area review dan validasi data komunitas.</span>
+            </div>
+        </div>
+    <% } %>
+
     <!-- Main Content -->
-    <main class="container mx-auto px-6 py-10">
+    <main class="container mx-auto px-6 py-10 lg:py-12">
         <%- body %>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 text-gray-300 py-8">
+    <footer class="mt-8 border-t border-emerald-100/80 bg-white/70 text-slate-500 backdrop-blur">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2026 Eco-Pulse Community. Built with 💚 for the planet.</p>
+            <div class="py-8">
+                <p class="text-sm font-semibold text-slate-700">&copy; 2026 Eco-Pulse Community</p>
+                <p class="mt-2 text-sm text-slate-500">Built for cleaner neighborhoods and verifiable community action.</p>
+            </div>
         </div>
     </footer>
 
