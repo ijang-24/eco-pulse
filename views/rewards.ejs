@@ -49,7 +49,7 @@
                                 <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Harga Tukar</p>
                                 <p class="text-2xl font-black text-amber-600"><%= reward.points_cost %> <span class="text-xs">PTS</span></p>
                             </div>
-                            <form action="/rewards/redeem/<%= reward.id %>" method="POST" onsubmit="return confirm('Tukarkan <%= reward.points_cost %> poin untuk reward ini?')" class="shrink-0">
+                            <form action="/rewards/redeem/<%= reward.id %>" method="POST" onsubmit="return <%= user.total_points >= reward.points_cost %> ? confirm('Tukarkan <%= reward.points_cost %> poin untuk reward ini?') : false" class="shrink-0">
                                 <button type="submit" 
                                     class="<%= user.total_points >= reward.points_cost ? 'bg-slate-900 text-white hover:bg-emerald-600' : 'bg-slate-100 text-slate-400 cursor-not-allowed' %> flex h-12 items-center gap-2 rounded-2xl px-6 font-bold transition shadow-lg shadow-slate-200"
                                     <%= user.total_points < reward.points_cost ? 'disabled' : '' %>>

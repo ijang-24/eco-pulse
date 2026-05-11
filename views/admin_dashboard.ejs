@@ -53,23 +53,39 @@
                                 <p class="text-xs text-slate-400">RT <%= log.rt %> / RW <%= log.rw %></p>
                             </td>
                             <td class="px-6 py-6">
-                                <p class="text-sm font-bold capitalize"><%= log.waste_type %></p>
-                                <p class="text-xs text-slate-500"><%= log.weight %> kg · <span class="text-emerald-600 font-bold">+<%= log.points_earned %> PTS</span></p>
+                                <div class="flex items-center gap-4">
+                                    <% if (log.photo_url) { %>
+                                        <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all" 
+                                             onclick="openImageModal('<%= log.photo_url %>')">
+                                            <img src="<%= log.photo_url %>" alt="Bukti Sampah" class="h-full w-full object-cover">
+                                        </div>
+                                    <% } else { %>
+                                        <div class="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-300">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                        </div>
+                                    <% } %>
+                                    <div>
+                                        <p class="text-sm font-bold capitalize"><%= log.waste_type %></p>
+                                        <p class="text-xs text-slate-500"><%= log.weight %> kg · <span class="text-emerald-600 font-bold">+<%= log.points_earned %> PTS</span></p>
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-6">
                                 <span class="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest 
-                                    <%= log.status === \"verified\" ? \"bg-emerald-100 text-emerald-700\" : 
-                                       log.status === \"rejected\" ? \"bg-rose-100 text-rose-700\" : \"bg-amber-100 text-amber-700\" %>">
+                                    <%= log.status === "verified" ? "bg-emerald-100 text-emerald-700" : 
+                                       log.status === "rejected" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700" %>">
                                     <%= log.status %>
                                 </span>
                             </td>
                             <td class="px-6 py-6 text-right">
-                                <form action=\"/admin/verify/<%= log.id %>\" method=\"POST\" class=\"inline-flex gap-2\">
-                                    <button name=\"status\" value=\"verified\" class=\"h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white flex items-center justify-center\">
-                                        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path d=\"M0 0h24v24H0z\" fill=\"none\"/><path d=\"M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z\"/></svg>
+                                <form action="/admin/verify/<%= log.id %>" method="POST" class="inline-flex gap-2">
+                                    <button name="status" value="verified" class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
                                     </button>
-                                    <button name=\"status\" value=\"rejected\" class=\"h-10 w-10 rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white flex items-center justify-center\">
-                                        <svg xmlns=\"http://www.w3.org/2000/svg\" class=\"h-5 w-5\" viewBox=\"0 0 20 20\" fill=\"currentColor\"><path d=\"M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z\"/></svg>
+                                    <button name="status" value="rejected" class="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
                                     </button>
                                 </form>
                             </td>
@@ -80,3 +96,58 @@
         </div>
     </div>
 </section>
+
+<!-- Image Preview Modal -->
+<div id="imageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0">
+    <div class="relative max-w-4xl w-full transform scale-95 transition-transform duration-300">
+        <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white hover:text-emerald-400 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <img id="modalImage" src="" alt="Preview Bukti Sampah" class="w-full h-auto rounded-3xl shadow-2xl">
+    </div>
+</div>
+
+<script>
+    function openImageModal(url) {
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const content = modal.querySelector('div');
+        
+        modalImg.src = url;
+        modal.classList.remove('hidden');
+        
+        // Trigger animations
+        setTimeout(() => {
+            modal.classList.add('opacity-100');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+        }, 10);
+        
+        // Close on ESC
+        document.addEventListener('keydown', handleEsc);
+        // Close on backdrop click
+        modal.onclick = (e) => {
+            if (e.target === modal) closeImageModal();
+        };
+    }
+
+    function closeImageModal() {
+        const modal = document.getElementById('imageModal');
+        const content = modal.querySelector('div');
+        
+        modal.classList.remove('opacity-100');
+        content.classList.remove('scale-100');
+        content.classList.add('scale-95');
+        
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            document.removeEventListener('keydown', handleEsc);
+        }, 300);
+    }
+
+    function handleEsc(e) {
+        if (e.key === 'Escape') closeImageModal();
+    }
+</script>

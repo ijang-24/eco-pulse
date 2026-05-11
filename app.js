@@ -204,10 +204,13 @@ app.get('/leaderboard', async (req, res) => {
 
 app.get('/rewards', isAuthenticated, async (req, res) => {
     try {
+        const user = await prisma.users.findUnique({
+            where: { id: req.session.user.id }
+        });
         const rewards = await prisma.rewards.findMany({
             where: { stock: { gt: 0 } }
         });
-        res.render('rewards', { title: 'Rewards | Eco-Pulse', rewards });
+        res.render('rewards', { title: 'Rewards | Eco-Pulse', rewards, user });
     } catch (err) {
         console.error('Rewards Error:', err);
         res.redirect('/dashboard');
@@ -424,6 +427,10 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
             logs: flattenedLogs,
             isAdminArea: true
         });
+    } catch (err) {
+        console.error("Admin Dashboard Error:", err);
+        req.flash("error_msg", "Gagal memuat dashboard admin.");
+        res.redirect("/dashboard");
     }
 });
 
@@ -449,12 +456,10 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
             } else if (log.status === "verified" && status === "rejected") {
                 pointsDelta = -log.points_earned;
             }
-
             await tx.waste_logs.update({
                 where: { id: logId },
                 data: { status }
             });
-
             if (pointsDelta !== 0) {
                 await tx.users.update({
                     where: { id: log.user_id },
@@ -465,6 +470,20 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
                     }
                 });
             }
+        }, {
+            maxWait: 5000,
+            timeout: 10000
+        });
+
+        req.flash("success_msg", `Waste log marked as ${status}.`);
+        res.redirect("/admin/dashboard");
+    } catch (err) {
+        console.error("Verify Error:", err);
+        req.flash("error_msg", "Failed to update status: " + err.message);
+        res.redirect("/admin/dashboard");
+    }
+});
+
 app.get("/admin/rewards", isAdmin, async (req, res) => {
     try {
         const rewards = await prisma.rewards.findMany();
@@ -495,8 +514,18 @@ app.post("/admin/rewards/add", isAdmin, async (req, res) => {
         res.redirect("/admin/rewards");
     }
 });
-        req.flash('error_msg', 'Failed to update status: ' + err.message);
-        res.redirect('/admin/dashboard');
+
+app.post("/admin/rewards/delete/:id", isAdmin, async (req, res) => {
+    try {
+        await prisma.rewards.delete({
+            where: { id: parseInt(req.params.id) }
+        });
+        req.flash("success_msg", "Reward berhasil dihapus!");
+        res.redirect("/admin/rewards");
+    } catch (err) {
+        console.error("Delete Reward Error:", err);
+        req.flash("error_msg", "Gagal menghapus reward.");
+        res.redirect("/admin/rewards");
     }
 });
 
