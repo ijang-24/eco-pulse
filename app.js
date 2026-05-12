@@ -101,67 +101,74 @@ app.get('/', (req, res) => {
     });
 });
 
+const { GoogleGenerativeAI } = require("@google/generative-ai");
+
+// Gemini AI Config
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+// ... existing code ...
+
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     try {
-        const user = await prisma.users.findUnique({
-            where: { id: req.session.user.id }
-        });
+        const userId = req.session.user.id;
 
-        const logs = await prisma.waste_logs.findMany({
-            where: { user_id: req.session.user.id },
-            orderBy: { created_at: 'desc' },
-            take: 5
-        });
+        // Parallelize initial queries
+        const [user, logs, aggregateEarned, redemptions, configs, verifiedLogsWithItems] = await Promise.all([
+            prisma.users.findUnique({ where: { id: userId } }),
+            prisma.waste_logs.findMany({
+                where: { user_id: userId },
+                include: { items: true },
+                orderBy: { created_at: 'desc' },
+                take: 5
+            }),
+            prisma.waste_logs.aggregate({
+                where: { user_id: userId, status: 'verified' },
+                _sum: { total_points: true, total_weight: true }
+            }),
+            prisma.redemptions.findMany({
+                where: { user_id: userId },
+                include: { reward: true }
+            }),
+            prisma.point_configs.findMany(),
+            prisma.waste_logs.findMany({
+                where: { user_id: userId, status: 'verified' },
+                include: { items: true }
+            })
+        ]);
 
-        const aggregateEarned = await prisma.waste_logs.aggregate({
-            where: { 
-                user_id: req.session.user.id,
-                status: 'verified'
-            },
-            _sum: {
-                points_earned: true
-            }
-        });
-
-        const redemptions = await prisma.redemptions.findMany({
-            where: { user_id: req.session.user.id },
-            include: { reward: true }
-        });
-
-        const totalEarned = aggregateEarned._sum.points_earned || 0;
+        const totalEarned = aggregateEarned._sum.total_points || 0;
         const totalSpent = redemptions.reduce((sum, r) => sum + r.reward.points_cost, 0);
         const correctPoints = totalEarned - totalSpent;
 
+        // Only update if points are actually out of sync
         if (user && Number(user.total_points || 0) !== Number(correctPoints)) {
             await prisma.users.update({
-                where: { id: req.session.user.id },
+                where: { id: userId },
                 data: { total_points: correctPoints }
             });
             user.total_points = correctPoints;
         }
 
-        const configs = await prisma.point_configs.findMany();
-        const verifiedLogs = await prisma.waste_logs.findMany({
-            where: { user_id: req.session.user.id, status: 'verified' }
-        });
-
         let totalCO2 = 0;
         let totalTrees = 0;
 
-        verifiedLogs.forEach(log => {
-            const config = configs.find(c => c.waste_type === log.waste_type);
-            if (config) {
-                totalCO2 += Number(log.weight) * Number(config.co2_factor);
-                totalTrees += Number(log.weight) * Number(config.tree_factor);
-            }
+        verifiedLogsWithItems.forEach(log => {
+            log.items.forEach(item => {
+                const config = configs.find(c => c.waste_type === item.waste_type);
+                if (config) {
+                    totalCO2 += Number(item.weight) * Number(config.co2_factor);
+                    totalTrees += Number(item.weight) * Number(config.tree_factor);
+                }
+            });
         });
 
-        const totalWeight = verifiedLogs.reduce((sum, log) => sum + Number(log.weight), 0);
+        const totalWeight = aggregateEarned._sum.total_weight || 0;
         const impact = {
             co2: totalCO2.toFixed(2),
             trees: totalTrees.toFixed(3),
-            energySaved: (totalWeight * 1.5).toFixed(1), // 1.5 kWh per kg
-            waterSaved: (totalWeight * 10).toFixed(0)    // 10 Liters per kg
+            energySaved: (Number(totalWeight) * 1.5).toFixed(1),
+            waterSaved: (Number(totalWeight) * 10).toFixed(0)
         };
         
         res.render('dashboard', { 
@@ -179,18 +186,21 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
 
 app.get('/leaderboard', async (req, res) => {
     try {
-        // Group by RT/RW and sum points from users, or aggregate waste_logs
-        // Using Prisma aggregate/groupBy for waste_logs to get real participation
-        const leaderboardData = await prisma.waste_logs.groupBy({
-            by: ['user_id'],
-            where: { status: 'verified' },
-            _sum: {
-                points_earned: true,
-                weight: true
-            }
-        });
+        const [leaderboardData, totalCommunityWeight] = await Promise.all([
+            prisma.waste_logs.groupBy({
+                by: ['user_id'],
+                where: { status: 'verified' },
+                _sum: {
+                    total_points: true,
+                    total_weight: true
+                }
+            }),
+            prisma.waste_logs.aggregate({
+                where: { status: 'verified' },
+                _sum: { total_weight: true }
+            })
+        ]);
 
-        // Map logs to users to get RT/RW info
         const users = await prisma.users.findMany({
             where: {
                 id: { in: leaderboardData.map(d => d.user_id).filter(id => id !== null) }
@@ -202,7 +212,6 @@ app.get('/leaderboard', async (req, res) => {
             }
         });
 
-        // Aggregate by RT/RW
         const rtRwGroups = {};
         leaderboardData.forEach(data => {
             const user = users.find(u => u.id === data.user_id);
@@ -211,26 +220,20 @@ app.get('/leaderboard', async (req, res) => {
                 if (!rtRwGroups[key]) {
                     rtRwGroups[key] = { rt_rw: key, total_points: 0, total_weight: 0 };
                 }
-                rtRwGroups[key].total_points += data._sum.points_earned || 0;
-                rtRwGroups[key].total_weight += Number(data._sum.weight || 0);
+                rtRwGroups[key].total_points += data._sum.total_points || 0;
+                rtRwGroups[key].total_weight += Number(data._sum.total_weight || 0);
             }
         });
 
         const sortedLeaderboard = Object.values(rtRwGroups)
             .sort((a, b) => b.total_points - a.total_points);
 
-        // Community Goal Calculation
-        const totalCommunityWeight = await prisma.waste_logs.aggregate({
-            where: { status: 'verified' },
-            _sum: { weight: true }
-        });
-
         res.render('leaderboard', { 
             title: 'Leaderboard | Eco-Pulse',
             leaderboard: sortedLeaderboard,
             communityGoal: {
-                current: Number(totalCommunityWeight._sum.weight || 0),
-                target: 500 // 500 kg static target
+                current: Number(totalCommunityWeight._sum.total_weight || 0),
+                target: 500
             }
         });
     } catch (err) {
@@ -371,16 +374,19 @@ app.get('/register', (req, res) => {
     res.render('register', { title: 'Register | Eco-Pulse' });
 });
 
-app.post('/register', async (req, res) => {
+app.post('/register', upload.single('kk_photo'), async (req, res) => {
     const username = normalizeText(req.body.username);
     const email = normalizeText(req.body.email).toLowerCase();
     const password = req.body.password || '';
+    const nik = normalizeText(req.body.nik);
+    const kk_number = normalizeText(req.body.kk_number);
     const rt = normalizeText(req.body.rt);
     const rw = normalizeText(req.body.rw);
     const role = ALLOWED_ROLES.has(req.body.role) ? req.body.role : 'citizen';
+    const kk_photo_url = req.file ? `/uploads/${req.file.filename}` : null;
 
-    if (!username || !email || !password || !rt || !rw) {
-        req.flash('error_msg', 'Semua field wajib diisi.');
+    if (!username || !email || !password || !nik || !kk_number || !rt || !rw || !kk_photo_url) {
+        req.flash('error_msg', 'Semua field wajib diisi, termasuk foto KK.');
         return res.redirect('/register');
     }
 
@@ -391,6 +397,9 @@ app.post('/register', async (req, res) => {
                 username,
                 email,
                 password: hashedPassword,
+                nik,
+                kk_number,
+                kk_photo_url,
                 address_rt: rt,
                 address_rw: rw,
                 role
@@ -399,8 +408,19 @@ app.post('/register', async (req, res) => {
         req.flash('success_msg', 'Registration successful! Please login.');
         res.redirect('/login');
     } catch (err) {
-        console.error('Registration Error:', err);
-        req.flash('error_msg', getDbErrorMessage(err, 'Registration failed. Please try again.'));
+        if (err.code === 'P2002') {
+            const target = err.meta?.target || [];
+            if (target.includes('email')) {
+                req.flash('error_msg', 'Email sudah terdaftar.');
+            } else if (target.includes('nik')) {
+                req.flash('error_msg', 'NIK sudah terdaftar.');
+            } else {
+                req.flash('error_msg', 'Data sudah terdaftar.');
+            }
+        } else {
+            console.error('Registration Error:', err);
+            req.flash('error_msg', 'Pendaftaran gagal. Silakan coba lagi.');
+        }
         res.redirect('/register');
     }
 });
@@ -409,24 +429,62 @@ app.get('/waste/track', isAuthenticated, (req, res) => {
     res.render('waste_track', { title: 'Track Waste | Eco-Pulse' });
 });
 
+// Helper for AI Image processing
+function fileToGenerativePart(path, mimeType) {
+    const fs = require('fs');
+    return {
+        inlineData: {
+            data: Buffer.from(fs.readFileSync(path)).toString("base64"),
+            mimeType,
+        },
+    };
+}
+
 app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, res) => {
-    const { waste_type, weight } = req.body;
+    const { weight } = req.body;
     const parsedWeight = parseFloat(weight);
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
 
-    if (isNaN(parsedWeight) || parsedWeight <= 0) {
-        req.flash("error_msg", "Berat sampah tidak valid.");
+    if (isNaN(parsedWeight) || parsedWeight <= 0 || !photo_url) {
+        req.flash("error_msg", "Data tidak valid.");
         return res.redirect("/waste/track");
     }
 
     try {
-        const config = await prisma.point_configs.findUnique({
-            where: { waste_type }
+        let aiResults = [];
+        if (process.env.GEMINI_API_KEY) {
+            const prompt = "Identify all types of waste in this image. Categorize them into: plastic, paper, metal, glass, or organic. Estimate the percentage distribution of each type. Return ONLY a JSON array like: [{\"type\": \"plastic\", \"percentage\": 60}, {\"type\": \"paper\", \"percentage\": 40}]";
+            const imagePart = fileToGenerativePart(req.file.path, req.file.mimetype);
+            const result = await visionModel.generateContent([prompt, imagePart]);
+            const response = await result.response;
+            const text = response.text();
+            
+            // Clean JSON response from AI
+            const jsonMatch = text.match(/\[.*\]/s);
+            if (jsonMatch) {
+                aiResults = JSON.parse(jsonMatch[0]);
+            }
+        }
+
+        // If AI fails or no API Key, default to 'organic' for full weight
+        if (aiResults.length === 0) {
+            aiResults = [{ type: 'organic', percentage: 100 }];
+        }
+
+        const configs = await prisma.point_configs.findMany();
+        let totalPoints = 0;
+
+        const itemsData = aiResults.map(resItem => {
+            const config = configs.find(c => c.waste_type === resItem.type) || configs.find(c => c.waste_type === 'organic');
+            const itemWeight = (parsedWeight * (resItem.percentage / 100));
+            const itemPoints = Math.floor(itemWeight * config.points_per_kg);
+            totalPoints += itemPoints;
+            return {
+                waste_type: config.waste_type,
+                weight: itemWeight,
+                points_earned: itemPoints
+            };
         });
-
-        if (!config) throw new Error('Invalid waste type');
-
-        const points = Math.floor(parsedWeight * config.points_per_kg);
 
         await prisma.$transaction(async (tx) => {
             const user = await tx.users.findUnique({ where: { id: req.session.user.id } });
@@ -438,47 +496,42 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
             if (user.last_log_date) {
                 const lastDate = new Date(user.last_log_date);
                 lastDate.setHours(0, 0, 0, 0);
-                
-                const diffTime = Math.abs(today - lastDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                const diffDays = Math.ceil(Math.abs(today - lastDate) / (1000 * 60 * 60 * 24));
 
-                if (diffDays === 1) {
-                    newStreak += 1;
-                } else if (diffDays > 1) {
-                    newStreak = 1;
-                }
-                // if diffDays === 0, keep same streak
+                if (diffDays === 1) newStreak += 1;
+                else if (diffDays > 1) newStreak = 1;
             } else {
                 newStreak = 1;
             }
 
-            await tx.waste_logs.create({
+            const log = await tx.waste_logs.create({
                 data: {
                     user_id: req.session.user.id,
-                    waste_type,
-                    weight: parsedWeight,
                     photo_url,
-                    points_earned: points
+                    total_points: totalPoints,
+                    total_weight: parsedWeight,
+                    ai_analysis: aiResults,
+                    items: {
+                        create: itemsData
+                    }
                 }
             });
 
             await tx.users.update({
                 where: { id: req.session.user.id },
                 data: {
-                    total_points: {
-                        increment: points
-                    },
+                    total_points: { increment: totalPoints },
                     current_streak: newStreak,
                     last_log_date: new Date()
                 }
             });
         });
 
-        req.flash('success_msg', `Waste logged successfully! You earned ${points} points.`);
+        req.flash('success_msg', `Berhasil! AI mendeteksi ${aiResults.length} jenis sampah. Total poin: ${totalPoints}`);
         res.redirect('/dashboard');
     } catch (err) {
         console.error('Waste Tracking Error:', err);
-        req.flash('error_msg', 'Failed to log waste: ' + err.message);
+        req.flash('error_msg', 'Gagal memproses AI: ' + err.message);
         res.redirect('/waste/track');
     }
 });
@@ -488,10 +541,14 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
     try {
         const [userCount, totalWaste, totalPoints, logs] = await Promise.all([
             prisma.users.count({ where: { role: "citizen" } }),
-            prisma.waste_logs.aggregate({ _sum: { weight: true }, where: { status: "verified" } }),
+            prisma.waste_logs.aggregate({ _sum: { total_weight: true }, where: { status: "verified" } }),
             prisma.users.aggregate({ _sum: { total_points: true } }),
             prisma.waste_logs.findMany({
-                include: { user: true },
+                include: { 
+                    user: true,
+                    items: true,
+                    verifier: true
+                },
                 orderBy: { created_at: "desc" }
             })
         ]);
@@ -500,14 +557,17 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
             ...log,
             username: log.user?.username || "Unknown",
             rt: log.user?.address_rt || "-",
-            rw: log.user?.address_rw || "-"
+            rw: log.user?.address_rw || "-",
+            points_earned: log.total_points, 
+            weight: log.total_weight,
+            verified_by_name: log.verifier?.username || null
         }));
 
         res.render("admin_dashboard", {
             title: "Admin Panel | Eco-Pulse",
             stats: {
                 users: userCount,
-                waste: totalWaste._sum.weight || 0,
+                waste: totalWaste._sum.total_weight || 0,
                 points: totalPoints._sum.total_points || 0
             },
             logs: flattenedLogs,
@@ -523,6 +583,7 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
 app.post('/admin/verify/:id', isAdmin, async (req, res) => {
     const logId = parseEntityId(req.params.id);
     const status = normalizeText(req.body.status);
+    const adminId = req.session.user.id;
 
     try {
         await prisma.$transaction(async (tx) => {
@@ -534,18 +595,27 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
                 throw new Error("Log tidak ditemukan.");
             }
 
+            if (log.status !== "pending" && status !== "pending") {
+                 throw new Error("Log ini sudah diproses dan tidak bisa diubah.");
+            }
+
             if (log.status === status) return;
 
             let pointsDelta = 0;
             if (log.status !== "verified" && status === "verified") {
-                pointsDelta = log.points_earned;
+                pointsDelta = log.total_points;
             } else if (log.status === "verified" && status === "rejected") {
-                pointsDelta = -log.points_earned;
+                pointsDelta = -log.total_points;
             }
+
             await tx.waste_logs.update({
                 where: { id: logId },
-                data: { status }
+                data: { 
+                    status,
+                    verified_by: adminId
+                }
             });
+
             if (pointsDelta !== 0) {
                 await tx.users.update({
                     where: { id: log.user_id },

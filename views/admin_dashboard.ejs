@@ -67,8 +67,24 @@
                                         </div>
                                     <% } %>
                                     <div>
-                                        <p class="text-sm font-bold capitalize"><%= log.waste_type %></p>
-                                        <p class="text-xs text-slate-500"><%= log.weight %> kg · <span class="text-emerald-600 font-bold">+<%= log.points_earned %> PTS</span></p>
+                                        <div class="flex flex-wrap gap-1 mb-1">
+                                            <% if (log.items && log.items.length > 0) { %>
+                                                <% log.items.forEach(item => { %>
+                                                    <span class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 ring-1 ring-emerald-100">
+                                                        <%= item.waste_type %>
+                                                    </span>
+                                                <% }) %>
+                                            <% } %>
+                                        </div>
+                                        <p class="text-xs text-slate-500 font-medium">
+                                            Total: <span class="text-slate-900 font-bold"><%= log.total_weight %> kg</span> 
+                                            · <span class="text-emerald-600 font-bold">+<%= log.total_points %> PTS</span>
+                                        </p>
+                                        <% if (log.ai_analysis) { %>
+                                            <p class="mt-1 text-[9px] font-bold text-slate-400 italic">
+                                                AI Deteksi: <%= log.ai_analysis.map(a => `${a.type}(${a.percentage}%)`).join(', ') %>
+                                            </p>
+                                        <% } %>
                                     </div>
                                 </div>
                             </td>
@@ -80,14 +96,28 @@
                                 </span>
                             </td>
                             <td class="px-6 py-6 text-right">
-                                <form action="/admin/verify/<%= log.id %>" method="POST" class="inline-flex gap-2">
-                                    <button name="status" value="verified" class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                                    </button>
-                                    <button name="status" value="rejected" class="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white flex items-center justify-center">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-                                    </button>
-                                </form>
+                                <% if (log.status === "pending") { %>
+                                    <form action="/admin/verify/<%= log.id %>" method="POST" class="inline-flex gap-2">
+                                        <button name="status" value="verified" class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white flex items-center justify-center" title="Setujui">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
+                                        </button>
+                                        <button name="status" value="rejected" class="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white flex items-center justify-center" title="Tolak">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+                                        </button>
+                                    </form>
+                                <% } else { %>
+                                    <div class="text-right">
+                                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Diverifikasi oleh:</p>
+                                        <div class="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 border border-slate-100">
+                                            <div class="h-4 w-4 rounded-full bg-slate-200 flex items-center justify-center">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                                                </svg>
+                                            </div>
+                                            <span class="text-xs font-bold text-slate-700"><%= log.verified_by_name || 'System' %></span>
+                                        </div>
+                                    </div>
+                                <% } %>
                             </td>
                         </tr>
                     <% }) %>
