@@ -9,10 +9,16 @@ const multer = require('multer');
 const prisma = require('./src/utils/prisma');
 const { hashPassword, verifyHashedPassword, isPasswordHashed } = require('./src/models/password');
 
-// Multer Config
+const fs = require('fs');
+
+// Multer Config optimized for Vercel/Production
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, 'public/uploads');
+        const uploadDir = process.env.VERCEL ? '/tmp' : 'public/uploads';
+        if (!fs.existsSync(uploadDir) && !process.env.VERCEL) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
         cb(null, Date.now() + path.extname(file.originalname));
@@ -383,9 +389,9 @@ app.post('/register', upload.single('kk_photo'), async (req, res) => {
     const rt = normalizeText(req.body.rt);
     const rw = normalizeText(req.body.rw);
     const role = ALLOWED_ROLES.has(req.body.role) ? req.body.role : 'citizen';
-    const kk_photo_url = req.file ? `/uploads/${req.file.filename}` : null;
+    const kk_photo_url = req.file ? (process.env.VERCEL ? null : `/uploads/${req.file.filename}`) : null;
 
-    if (!username || !email || !password || !nik || !kk_number || !rt || !rw || !kk_photo_url) {
+    if (!username || !email || !password || !nik || !kk_number || !rt || !rw || !req.file) {
         req.flash('error_msg', 'Semua field wajib diisi, termasuk foto KK.');
         return res.redirect('/register');
     }
@@ -443,9 +449,10 @@ function fileToGenerativePart(path, mimeType) {
 app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, res) => {
     const { weight } = req.body;
     const parsedWeight = parseFloat(weight);
-    const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
+    // In Vercel /tmp is not served as static, so we provide a placeholder or skip the relative path
+    const photo_url = req.file ? (process.env.VERCEL ? null : `/uploads/${req.file.filename}`) : null;
 
-    if (isNaN(parsedWeight) || parsedWeight <= 0 || !photo_url) {
+    if (isNaN(parsedWeight) || parsedWeight <= 0 || !req.file) {
         req.flash("error_msg", "Data tidak valid.");
         return res.redirect("/waste/track");
     }
