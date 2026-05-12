@@ -155,15 +155,20 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
                 totalTrees += Number(log.weight) * Number(config.tree_factor);
             }
         });
+
+        const totalWeight = verifiedLogs.reduce((sum, log) => sum + Number(log.weight), 0);
+        const impact = {
+            co2: totalCO2.toFixed(2),
+            trees: totalTrees.toFixed(3),
+            energySaved: (totalWeight * 1.5).toFixed(1), // 1.5 kWh per kg
+            waterSaved: (totalWeight * 10).toFixed(0)    // 10 Liters per kg
+        };
         
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
             user: user,
             logs: logs || [],
-            impact: {
-                co2: totalCO2.toFixed(2),
-                trees: totalTrees.toFixed(3)
-            }
+            impact: impact
         });
     } catch (err) {
         console.error('Dashboard Error:', err);
@@ -214,9 +219,19 @@ app.get('/leaderboard', async (req, res) => {
         const sortedLeaderboard = Object.values(rtRwGroups)
             .sort((a, b) => b.total_points - a.total_points);
 
+        // Community Goal Calculation
+        const totalCommunityWeight = await prisma.waste_logs.aggregate({
+            where: { status: 'verified' },
+            _sum: { weight: true }
+        });
+
         res.render('leaderboard', { 
             title: 'Leaderboard | Eco-Pulse',
-            leaderboard: sortedLeaderboard
+            leaderboard: sortedLeaderboard,
+            communityGoal: {
+                current: Number(totalCommunityWeight._sum.weight || 0),
+                target: 500 // 500 kg static target
+            }
         });
     } catch (err) {
         console.error('Leaderboard Error:', err);
@@ -414,6 +429,29 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
         const points = Math.floor(parsedWeight * config.points_per_kg);
 
         await prisma.$transaction(async (tx) => {
+            const user = await tx.users.findUnique({ where: { id: req.session.user.id } });
+            
+            let newStreak = user.current_streak || 0;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            if (user.last_log_date) {
+                const lastDate = new Date(user.last_log_date);
+                lastDate.setHours(0, 0, 0, 0);
+                
+                const diffTime = Math.abs(today - lastDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                if (diffDays === 1) {
+                    newStreak += 1;
+                } else if (diffDays > 1) {
+                    newStreak = 1;
+                }
+                // if diffDays === 0, keep same streak
+            } else {
+                newStreak = 1;
+            }
+
             await tx.waste_logs.create({
                 data: {
                     user_id: req.session.user.id,
@@ -429,7 +467,9 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
                 data: {
                     total_points: {
                         increment: points
-                    }
+                    },
+                    current_streak: newStreak,
+                    last_log_date: new Date()
                 }
             });
         });

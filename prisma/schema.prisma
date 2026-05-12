@@ -23,6 +23,8 @@ model users {
   address_rw   String?       @db.VarChar(10)
   role         String        @default("citizen") @db.VarChar(20)
   total_points Int           @default(0)
+  current_streak Int         @default(0)
+  last_log_date DateTime?    @db.Timestamp(6)
   created_at   DateTime      @default(now()) @db.Timestamp(6)
   redemptions  redemptions[]
   waste_logs   waste_logs[]

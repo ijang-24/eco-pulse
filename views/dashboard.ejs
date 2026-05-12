@@ -5,7 +5,18 @@
         <div class="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div>
                 <p class="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30">Citizen Dashboard</p>
-                <h1 class="mt-4 text-4xl font-extrabold tracking-tight lg:text-5xl">Welcome back, <span class="text-lime-200"><%= user.username %>!</span></h1>
+                <div class="mt-4 flex flex-wrap items-center gap-4">
+                    <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl">Welcome back, <span class="text-lime-200"><%= user.username %>!</span></h1>
+                    <% if (user.current_streak > 0) { %>
+                        <div class="flex items-center gap-2 rounded-2xl bg-white/20 px-4 py-2 backdrop-blur-md ring-1 ring-white/30 animate-pulse">
+                            <span class="text-2xl">🔥</span>
+                            <div class="text-left">
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-emerald-100">Daily Streak</p>
+                                <p class="text-lg font-black leading-none"><%= user.current_streak %> Days</p>
+                            </div>
+                        </div>
+                    <% } %>
+                </div>
                 <p class="mt-2 text-emerald-50/90 font-medium">Anda telah berkontribusi aktif dalam menjaga kebersihan RT <%= user.rt %> / RW <%= user.rw %>.</p>
             </div>
             <a href="/waste/track" class="group flex items-center gap-3 rounded-2xl bg-white px-6 py-4 font-bold text-emerald-700 shadow-xl transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]">
@@ -64,6 +75,40 @@
             </div>
             <p class="mt-6 text-5xl font-extrabold tracking-tight text-slate-900"><%= impact.trees %></p>
             <p class="mt-2 text-sm font-medium text-slate-500">Visualized eco-impact</p>
+        </div>
+
+        <!-- Energy Saved Card (New) -->
+        <div class="group relative rounded-[2rem] border border-yellow-100 bg-white p-8 shadow-[0_15px_40px_rgba(234,179,8,0.06)] transition hover:shadow-[0_20px_50px_rgba(234,179,8,0.1)]">
+            <div class="flex items-center justify-between">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-yellow-50 text-yellow-600 transition group-hover:bg-yellow-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.989-2.386l-.548-.547z" />
+                    </svg>
+                </div>
+                <span class="text-xs font-bold uppercase tracking-widest text-yellow-500">Energy Saved</span>
+            </div>
+            <div class="mt-6 flex items-baseline gap-2">
+                <p class="text-5xl font-extrabold tracking-tight text-slate-900"><%= impact.energySaved %></p>
+                <p class="text-lg font-bold text-slate-400">kWh</p>
+            </div>
+            <p class="mt-2 text-sm font-medium text-slate-500">Setara menyalakan lampu</p>
+        </div>
+
+        <!-- Water Saved Card (New) -->
+        <div class="group relative rounded-[2rem] border border-blue-100 bg-white p-8 shadow-[0_15px_40px_rgba(59,130,246,0.06)] transition hover:shadow-[0_20px_50px_rgba(59,130,246,0.1)]">
+            <div class="flex items-center justify-between">
+                <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition group-hover:bg-blue-100">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+                <span class="text-xs font-bold uppercase tracking-widest text-blue-500">Water Saved</span>
+            </div>
+            <div class="mt-6 flex items-baseline gap-2">
+                <p class="text-5xl font-extrabold tracking-tight text-slate-900"><%= impact.waterSaved %></p>
+                <p class="text-lg font-bold text-slate-400">Liters</p>
+            </div>
+            <p class="mt-2 text-sm font-medium text-slate-500">Air bersih yang diselamatkan</p>
         </div>
     </div>
 

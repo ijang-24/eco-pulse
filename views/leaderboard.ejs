@@ -6,6 +6,26 @@
             <h1 class="mt-4 text-4xl font-extrabold tracking-tight lg:text-5xl">Neighborhood <span class="text-emerald-200">Leaderboard</span></h1>
             <p class="mt-2 text-emerald-50/90 font-medium max-w-2xl">Peringkat partisipasi lingkungan berdasarkan kontribusi pengelolaan sampah dari tiap wilayah RT/RW.</p>
         </div>
+
+        <!-- Community Goal Section -->
+        <div class="mt-10 rounded-[2rem] bg-white/10 p-6 backdrop-blur-md ring-1 ring-white/20">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-white">Target Komunitas Bulan Ini</h3>
+                    <p class="text-sm text-emerald-50">Kumpulkan total 500kg sampah untuk membuka reward spesial RT!</p>
+                </div>
+                <div class="flex-1 max-w-md">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold uppercase tracking-wider text-emerald-100"><%= communityGoal.current.toFixed(1) %> / <%= communityGoal.target %> kg</span>
+                        <span class="text-xs font-bold text-white"><%= Math.round((communityGoal.current / communityGoal.target) * 100) %>%</span>
+                    </div>
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-white/20">
+                        <div class="h-full bg-gradient-to-r from-lime-400 to-emerald-400 shadow-[0_0_20px_rgba(163,230,53,0.5)] transition-all duration-1000" 
+                             style="width: <%= Math.min((communityGoal.current / communityGoal.target) * 100, 100) %>%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="rounded-[2.5rem] border border-emerald-100 bg-white/95 p-6 shadow-[0_20px_60px_rgba(16,185,129,0.08)] backdrop-blur-xl lg:p-8">
