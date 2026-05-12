@@ -76,7 +76,9 @@
                 <!-- Desktop Menu -->
                 <div class="hidden xl:flex xl:items-center xl:gap-4">
                     <div class="flex items-center gap-2 rounded-full <%= isAdminArea ? 'border-amber-100 bg-white/95 shadow-[0_8px_24px_rgba(251,191,36,0.08)]' : 'border-emerald-100 bg-white/90 shadow-[0_8px_24px_rgba(34,197,94,0.06)]' %> p-2 text-sm font-semibold text-slate-600">
-                        <a href="/dashboard" class="rounded-full px-4 py-2 transition <%= isAdminArea ? 'hover:bg-amber-50 hover:text-amber-800' : 'hover:bg-emerald-50 hover:text-emerald-800' %>">Dashboard</a>
+                        <% if (!user || user.role !== 'admin') { %>
+                            <a href="/dashboard" class="rounded-full px-4 py-2 transition <%= isAdminArea ? 'hover:bg-amber-50 hover:text-amber-800' : 'hover:bg-emerald-50 hover:text-emerald-800' %>">Dashboard</a>
+                        <% } %>
                         <a href="/leaderboard" class="rounded-full px-4 py-2 transition hover:bg-sky-50 hover:text-sky-800">Leaderboard</a>
                         <a href="/rewards" class="rounded-full px-4 py-2 transition hover:bg-amber-50 hover:text-amber-800">Rewards</a>
                         <a href="/my-vouchers" class="rounded-full px-4 py-2 transition hover:bg-indigo-50 hover:text-indigo-800">My Vouchers</a>
@@ -106,7 +108,9 @@
             <!-- Mobile Menu -->
             <div id="mobileMenu" class="hidden mt-4 flex flex-col gap-4 xl:hidden">
                 <div class="flex flex-col gap-2 rounded-2xl <%= isAdminArea ? 'border-amber-100 bg-white/95' : 'border-emerald-100 bg-white/90' %> p-4 text-sm font-semibold text-slate-600 border">
-                    <a href="/dashboard" class="rounded-xl px-4 py-3 transition hover:bg-emerald-50 hover:text-emerald-800">Dashboard</a>
+                    <% if (!user || user.role !== 'admin') { %>
+                        <a href="/dashboard" class="rounded-xl px-4 py-3 transition hover:bg-emerald-50 hover:text-emerald-800">Dashboard</a>
+                    <% } %>
                     <a href="/leaderboard" class="rounded-xl px-4 py-3 transition hover:bg-sky-50 hover:text-sky-800">Leaderboard</a>
                     <a href="/rewards" class="rounded-xl px-4 py-3 transition hover:bg-amber-50 hover:text-amber-800">Rewards</a>
                     <a href="/my-vouchers" class="rounded-xl px-4 py-3 transition hover:bg-indigo-50 hover:text-indigo-800">My Vouchers</a>

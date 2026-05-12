@@ -118,6 +118,12 @@ const visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
+        const userRole = req.session.user.role;
+
+        // Redirect admin to admin dashboard if they try to access citizen dashboard
+        if (userRole === 'admin') {
+            return res.redirect('/admin/dashboard');
+        }
 
         // Parallelize initial queries
         const [user, logs, aggregateEarned, redemptions, configs, verifiedLogsWithItems] = await Promise.all([
