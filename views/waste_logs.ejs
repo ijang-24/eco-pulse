@@ -1,0 +1,119 @@
+<section class="space-y-8">
+
+    <!-- Page Header -->
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-emerald-600 via-emerald-500 to-lime-400 p-8 text-white shadow-[0_20px_50px_rgba(34,197,94,0.15)] lg:p-12">
+        <div class="absolute -right-10 top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
+        <div class="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+                <a href="/dashboard" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-emerald-100 hover:text-white transition mb-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Kembali ke Dashboard
+                </a>
+                <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl">Riwayat Sampah</h1>
+                <p class="mt-2 text-emerald-50/90 font-medium">Seluruh setoran sampah yang pernah kamu catat.</p>
+            </div>
+            <a href="/waste/track" class="inline-flex items-center gap-3 self-start rounded-2xl bg-white px-6 py-4 font-bold text-emerald-700 shadow-xl transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98] lg:self-auto">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                </svg>
+                Tambah Setoran
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Bar -->
+    <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <div class="rounded-[2rem] border border-emerald-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-emerald-500">Total Setoran</p>
+            <p class="mt-2 text-4xl font-extrabold text-slate-900"><%= logs.length %></p>
+        </div>
+        <div class="rounded-[2rem] border border-amber-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-amber-500">Pending</p>
+            <p class="mt-2 text-4xl font-extrabold text-slate-900"><%= logs.filter(l => l.status === 'pending').length %></p>
+        </div>
+        <div class="rounded-[2rem] border border-emerald-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-emerald-600">Verified</p>
+            <p class="mt-2 text-4xl font-extrabold text-slate-900"><%= logs.filter(l => l.status === 'verified').length %></p>
+        </div>
+        <div class="rounded-[2rem] border border-rose-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-rose-500">Rejected</p>
+            <p class="mt-2 text-4xl font-extrabold text-slate-900"><%= logs.filter(l => l.status === 'rejected').length %></p>
+        </div>
+    </div>
+
+    <!-- Logs Table -->
+    <div class="rounded-[2.5rem] border border-emerald-100 bg-white/95 p-8 shadow-[0_20px_60px_rgba(34,197,94,0.08)] backdrop-blur-xl lg:p-10">
+
+        <% if (logs && logs.length > 0) { %>
+            <div class="grid gap-4">
+                <% logs.forEach(log => { %>
+                    <div class="group flex flex-col gap-6 rounded-3xl border border-slate-100 bg-white p-6 transition hover:border-emerald-200 hover:shadow-md lg:flex-row lg:items-center lg:justify-between lg:p-5">
+                        
+                        <!-- Left: Photo + Info -->
+                        <div class="flex items-center gap-5">
+                            <div class="relative shrink-0 overflow-hidden rounded-2xl bg-slate-100 shadow-inner">
+                                <% if (log.photo_url) { %>
+                                    <img src="<%= log.photo_url %>" alt="Foto Sampah" class="h-20 w-20 object-cover transition group-hover:scale-110">
+                                <% } else { %>
+                                    <div class="flex h-20 w-20 items-center justify-center text-slate-300">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p class="text-lg font-extrabold capitalize text-slate-900"><%= log.waste_type %> Waste</p>
+                                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider
+                                        <%= log.status === 'verified' ? 'bg-emerald-100 text-emerald-700' :
+                                           log.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' %>">
+                                        <%= log.status %>
+                                    </span>
+                                </div>
+                                <p class="mt-1 text-sm font-medium text-slate-500">
+                                    <span class="text-slate-900 font-bold"><%= log.weight %> kg</span>
+                                    <span class="mx-2 text-slate-300">•</span>
+                                    <%= new Date(log.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
+                                    <span class="mx-2 text-slate-300">•</span>
+                                    <%= new Date(log.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) %> WIB
+                                </p>
+                                <% if (log.ai_confidence) { %>
+                                    <p class="mt-1 text-[11px] font-semibold text-slate-400">
+                                        🤖 AI Confidence: <span class="text-emerald-600"><%= (log.ai_confidence * 100).toFixed(0) %>%</span>
+                                    </p>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <!-- Right: Points -->
+                        <div class="flex items-center justify-between border-t border-slate-50 pt-4 lg:border-none lg:pt-0 lg:text-right">
+                            <div>
+                                <p class="text-2xl font-black text-emerald-600">+<%= log.points_earned %></p>
+                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Green Points</p>
+                            </div>
+                        </div>
+
+                    </div>
+                <% }) %>
+            </div>
+
+        <% } else { %>
+            <div class="flex flex-col items-center justify-center py-24 text-center">
+                <div class="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-slate-50 text-slate-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <h3 class="mt-6 text-xl font-extrabold text-slate-900">Belum ada setoran</h3>
+                <p class="mt-2 max-w-sm text-sm leading-6 text-slate-500">Mulai perjalanan hijau kamu hari ini dengan mencatat sampah terpilah pertamamu.</p>
+                <a href="/waste/track" class="mt-6 rounded-2xl bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700">Mulai Tracking</a>
+            </div>
+        <% } %>
+
+    </div>
+
+</section>

@@ -4,8 +4,13 @@
         <div class="absolute -right-10 top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl"></div>
         <div class="relative flex flex-col items-start justify-between gap-6 lg:flex-row lg:items-center">
             <div>
-                <p class="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30">Citizen Dashboard</p>
-                    <div class="mt-4 flex flex-wrap items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <p class="inline-flex rounded-full bg-white/15 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-white ring-1 ring-white/30">Citizen Dashboard</p>
+                    <span class="inline-flex items-center gap-1.5 rounded-full bg-lime-400/20 px-3 py-1 text-xs font-bold text-lime-100 ring-1 ring-lime-400/30 shadow-sm">
+                        <%= level.icon %> Rank: <%= level.name %>
+                    </span>
+                </div>
+                <div class="mt-4 flex flex-wrap items-center gap-4">
                     <h1 class="text-4xl font-extrabold tracking-tight lg:text-5xl">Welcome back, <span class="text-lime-200"><%= user.username %>!</span></h1>
                     <% if (user.current_streak > 0) { %>
                         <div class="flex items-center gap-2 rounded-2xl bg-white/20 px-4 py-2 backdrop-blur-md ring-1 ring-white/30 animate-pulse">
@@ -17,16 +22,57 @@
                         </div>
                     <% } %>
                 </div>
-                <p class="mt-2 text-emerald-50/90 font-medium">Anda telah berkontribusi aktif dalam menjaga kebersihan RT <%= user.rt %> / RW <%= user.rw %>.</p>
+                <p class="mt-2 text-emerald-50/90 font-medium">Anda telah berkontribusi aktif dalam menjaga kebersihan RT <%= user.address_rt %> / RW <%= user.address_rw %>.</p>
             </div>
-            <a href="/waste/track" class="group flex items-center gap-3 rounded-2xl bg-white px-6 py-4 font-bold text-emerald-700 shadow-xl transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]">
-                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 group-hover:bg-emerald-200 transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+            <div class="flex flex-col gap-4">
+                <a href="/waste/track" class="group flex items-center gap-3 rounded-2xl bg-white px-6 py-4 font-bold text-emerald-700 shadow-xl transition hover:bg-emerald-50 hover:scale-[1.02] active:scale-[0.98]">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-100 group-hover:bg-emerald-200 transition">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+                        </svg>
+                    </span>
+                    Track New Waste
+                </a>
+                <button onclick="openImpactCard()" class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-700/40 px-6 py-3 text-sm font-bold text-white shadow-lg backdrop-blur-md ring-1 ring-white/20 transition hover:bg-emerald-700/60 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
                     </svg>
-                </span>
-                Track New Waste
-            </a>
+                    Share My Impact
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Community Goal Section -->
+    <div class="rounded-[2.5rem] bg-slate-900 p-8 text-white shadow-2xl relative overflow-hidden">
+        <div class="absolute -right-20 -bottom-20 h-64 w-64 rounded-full bg-lime-500/10 blur-3xl"></div>
+        <div class="relative flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+            <div class="flex items-center gap-6">
+                <div class="flex h-16 w-16 items-center justify-center rounded-3xl bg-white/10 text-lime-400 ring-1 ring-white/20 shadow-inner">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <h3 class="text-2xl font-black tracking-tight">COMMUNITY GOAL</h3>
+                        <span class="rounded-lg bg-lime-400 px-2 py-0.5 text-[10px] font-black uppercase text-slate-900 tracking-tighter">RT <%= community.rt %> / RW <%= community.rw %></span>
+                    </div>
+                    <p class="mt-1 text-slate-400 font-medium italic">Target: 500kg sampah terpilah bulan ini.</p>
+                </div>
+            </div>
+            <div class="w-full lg:w-1/2">
+                <div class="flex items-end justify-between mb-3">
+                    <p class="text-4xl font-black text-lime-400"><%= community.total %> <span class="text-sm font-bold uppercase text-slate-400 tracking-tighter">/ 500 kg</span></p>
+                    <div class="text-right">
+                        <p class="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Current Progress</p>
+                        <p class="text-lg font-black text-white"><%= community.progress %>%</p>
+                    </div>
+                </div>
+                <div class="h-3.5 w-full overflow-hidden rounded-full bg-white/5 ring-1 ring-white/10">
+                    <div class="h-full bg-gradient-to-r from-lime-400 via-emerald-500 to-emerald-600 transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(163,230,53,0.3)]" style="width: <%= community.progress %>%"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -43,7 +89,16 @@
                 <span class="text-xs font-bold uppercase tracking-widest text-emerald-500">Total Points</span>
             </div>
             <p class="mt-6 text-5xl font-extrabold tracking-tight text-slate-900"><%= user.total_points || 0 %></p>
-            <p class="mt-2 text-sm font-medium text-slate-500">Green Points earned</p>
+            <div class="mt-4">
+                <div class="flex items-center justify-between text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5">
+                    <span>Progress to Next Level</span>
+                    <span><%= Math.round(level.progress) %>%</span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100 ring-1 ring-slate-200/50">
+                    <div class="h-full bg-gradient-to-r from-emerald-500 to-lime-400 transition-all duration-1000 ease-out" style="width: <%= level.progress %>%"></div>
+                </div>
+            </div>
+            <p class="mt-4 text-sm font-medium text-slate-500">Green Points earned</p>
         </div>
 
         <!-- CO2 Card -->
@@ -77,7 +132,7 @@
             <p class="mt-2 text-sm font-medium text-slate-500">Visualized eco-impact</p>
         </div>
 
-        <!-- Energy Saved Card (New) -->
+        <!-- Energy Saved Card -->
         <div class="group relative rounded-[2rem] border border-yellow-100 bg-white p-8 shadow-[0_15px_40px_rgba(234,179,8,0.06)] transition hover:shadow-[0_20px_50px_rgba(234,179,8,0.1)]">
             <div class="flex items-center justify-between">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-yellow-50 text-yellow-600 transition group-hover:bg-yellow-100">
@@ -94,7 +149,7 @@
             <p class="mt-2 text-sm font-medium text-slate-500">Setara menyalakan lampu</p>
         </div>
 
-        <!-- Water Saved Card (New) -->
+        <!-- Water Saved Card -->
         <div class="group relative rounded-[2rem] border border-blue-100 bg-white p-8 shadow-[0_15px_40px_rgba(59,130,246,0.06)] transition hover:shadow-[0_20px_50px_rgba(59,130,246,0.1)]">
             <div class="flex items-center justify-between">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-50 text-blue-600 transition group-hover:bg-blue-100">
@@ -111,15 +166,75 @@
             <p class="mt-2 text-sm font-medium text-slate-500">Air bersih yang diselamatkan</p>
         </div>
     </div>
+    
+    <!-- Impact Analytics Section -->
+    <div class="grid gap-6 lg:grid-cols-3">
+        <div class="lg:col-span-2 rounded-[2.5rem] border border-emerald-100 bg-white/95 p-8 shadow-[0_20px_60px_rgba(34,197,94,0.08)] backdrop-blur-xl lg:p-10">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-3xl font-extrabold text-slate-900">Impact Analytics</h2>
+                    <p class="mt-1 text-sm font-medium text-slate-500">History kontribusi berat sampah Anda.</p>
+                </div>
+                <div class="flex items-center gap-3">
+                    <% if (user.total_points >= 100) { %>
+                        <a href="/dashboard/certificate" target="_blank" class="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-bold text-white transition hover:bg-slate-800 active:scale-95">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            Get Certificate
+                        </a>
+                    <% } %>
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-3 w-3 rounded-full bg-emerald-500"></span>
+                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Verified Waste (kg)</span>
+                    </div>
+                </div>
+            </div>
+            <div class="relative h-[300px] w-full">
+                <canvas id="impactChart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Waste Distribution (Pie Chart) -->
+        <div class="rounded-[2.5rem] border border-sky-100 bg-white/95 p-8 shadow-[0_20px_60px_rgba(14,165,233,0.06)] backdrop-blur-xl lg:p-10">
+            <h3 class="text-xl font-extrabold text-slate-900">Waste Breakdown</h3>
+            <p class="mt-1 text-sm font-medium text-slate-500">Distribusi jenis sampah Anda.</p>
+            
+            <div class="relative mt-8 h-[250px] w-full">
+                <% if (breakdownData.values.length > 0) { %>
+                    <canvas id="breakdownChart"></canvas>
+                <% } else { %>
+                    <div class="flex h-full flex-col items-center justify-center text-center">
+                        <div class="rounded-2xl bg-slate-50 p-4 text-slate-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                            </svg>
+                        </div>
+                        <p class="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">No data available</p>
+                    </div>
+                <% } %>
+            </div>
 
-    <!-- Waste Logs Section -->
+            <div class="mt-8 grid grid-cols-2 gap-2">
+                <% breakdownData.labels.forEach((label, i) => { %>
+                    <div class="flex items-center gap-2 rounded-xl border border-slate-50 bg-slate-50/50 px-3 py-2">
+                        <span class="h-2 w-2 rounded-full" style="background-color: <%= ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'][i % 5] %>"></span>
+                        <span class="text-[10px] font-bold uppercase text-slate-600 truncate"><%= label %></span>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Logs Section -->
     <div class="rounded-[2.5rem] border border-emerald-100 bg-white/95 p-8 shadow-[0_20px_60px_rgba(34,197,94,0.08)] backdrop-blur-xl lg:p-10">
         <div class="mb-10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
                 <h2 class="text-3xl font-extrabold text-slate-900">Recent Waste Logs</h2>
-                <p class="mt-1 text-sm font-medium text-slate-500 italic">Tracking your 5 latest contributions to the community.</p>
+                <p class="mt-1 text-sm font-medium text-slate-500 italic">Tracking your 5 latest contributions.</p>
             </div>
-            <a href="/waste/track" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition">View all activity &rarr;</a>
+            <a href="/waste/logs" class="text-sm font-bold text-emerald-600 hover:text-emerald-700 hover:underline transition">View all activity &rarr;</a>
         </div>
 
         <% if (logs && logs.length > 0) { %>
@@ -158,42 +273,199 @@
                                     <span class="mx-2 text-slate-300">•</span> 
                                     <%= new Date(log.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %>
                                 </p>
-                                <% if (log.ai_analysis) { %>
-                                    <div class="mt-3 flex flex-wrap gap-2">
-                                        <% log.ai_analysis.forEach(item => { %>
-                                            <span class="inline-flex items-center rounded-lg bg-slate-100 px-2 py-1 text-[10px] font-bold text-slate-600 ring-1 ring-slate-200">
-                                                AI: <%= item.type %> (<%= item.percentage %>%)
-                                            </span>
-                                        <% }) %>
-                                    </div>
-                                <% } %>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between border-t border-slate-50 pt-4 lg:border-none lg:pt-0">
-                            <div class="text-right">
-                                <p class="text-xl font-black text-emerald-600">+<%= log.total_points %></p>
-                                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Green Points</p>
-                            </div>
-                            <button class="ml-6 hidden h-10 w-10 items-center justify-center rounded-xl bg-slate-50 text-slate-400 transition hover:bg-emerald-50 hover:text-emerald-600 lg:flex">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                    <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
+                        <div class="text-right">
+                            <p class="text-xl font-black text-emerald-600">+<%= log.total_points %></p>
+                            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400">Points</p>
                         </div>
                     </div>
                 <% }) %>
             </div>
         <% } else { %>
-            <div class="flex flex-col items-center justify-center py-20 text-center">
-                <div class="flex h-20 w-20 items-center justify-center rounded-[2rem] bg-slate-50 text-slate-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
-                <h3 class="mt-6 text-xl font-extrabold text-slate-900">Belum ada kontribusi</h3>
-                <p class="mt-2 max-w-sm text-sm leading-6 text-slate-500">Mulai perjalanan hijau Anda hari ini dengan mencatat sampah terpilah pertama Anda.</p>
-                <a href="/waste/track" class="mt-6 rounded-2xl bg-emerald-600 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-700">Mulai Tracking</a>
-            </div>
+            <p class="text-center py-10 text-slate-400 italic">No logs found.</p>
         <% } %>
     </div>
 </section>
+
+<!-- Impact Card Modal -->
+<div id="impactCardModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-md animate-in fade-in zoom-in duration-300">
+        <div id="captureArea" class="overflow-hidden rounded-[2.5rem] bg-white shadow-2xl">
+            <div class="bg-gradient-to-br from-emerald-600 via-emerald-500 to-lime-400 p-8 text-white">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <p class="text-sm font-black uppercase tracking-widest">Eco-Pulse</p>
+                    </div>
+                    <span class="rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest">Community Hero</span>
+                </div>
+                <div class="mt-8">
+                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-100">Sustainability Impact</p>
+                    <h2 class="mt-1 text-3xl font-black tracking-tight"><%= user.username %></h2>
+                </div>
+            </div>
+            <div class="p-8">
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-100">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Points Earned</p>
+                        <p class="mt-1 text-3xl font-black text-emerald-600 tracking-tighter"><%= user.total_points %></p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-100">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Eco Rank</p>
+                        <p class="mt-1 text-xl font-black text-slate-900 tracking-tight"><%= level.name %></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-6 grid grid-cols-2 gap-3">
+            <button onclick="shareImpact()" class="flex items-center justify-center gap-2 rounded-2xl bg-white py-4 text-sm font-bold text-slate-600 shadow-xl transition hover:bg-slate-50 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                </svg>
+                Share Text
+            </button>
+            <button onclick="downloadCard()" class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-xl shadow-emerald-200 transition hover:bg-emerald-700 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download PNG
+            </button>
+        </div>
+        <button onclick="closeImpactCard()" class="mt-3 w-full py-2 text-xs font-bold text-white/50 hover:text-white transition">Tutup</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+function openImpactCard() {
+    document.getElementById('impactCardModal').classList.remove('hidden');
+    document.getElementById('impactCardModal').classList.add('flex');
+    document.body.style.overflow = 'hidden';
+}
+
+function closeImpactCard() {
+    document.getElementById('impactCardModal').classList.add('hidden');
+    document.getElementById('impactCardModal').classList.remove('flex');
+    document.body.style.overflow = 'auto';
+}
+
+async function shareImpact() {
+    const shareText = `Saya telah berkontribusi di Eco-Pulse! 🌿\n\n🎯 Total Poin: <%= user.total_points %>\n🏆 Peringkat: <%= level.name %>\n🌍 Dampak: Menyelamatkan <%= impact.trees %> pohon!\n\nMari jaga lingkungan bersama di RT <%= user.address_rt %> / RW <%= user.address_rw %>! #EcoPulse #GreenLife`;
+    
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Eco-Pulse Impact',
+                text: shareText,
+                url: window.location.origin
+            });
+        } catch (err) {
+            copyImpactText(shareText);
+        }
+    } else {
+        copyImpactText(shareText);
+    }
+}
+
+function copyImpactText(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Pesan berhasil disalin!',
+            showConfirmButton: false,
+            timer: 2000
+        });
+    });
+}
+
+async function downloadCard() {
+    const captureArea = document.getElementById('captureArea');
+    const btn = event.currentTarget;
+    const originalText = btn.innerText;
+    
+    btn.disabled = true;
+    btn.innerText = 'Generating...';
+
+    try {
+        const canvas = await html2canvas(captureArea, {
+            backgroundColor: null,
+            scale: 2,
+            useCORS: true
+        });
+        
+        const link = document.createElement('a');
+        link.download = `EcoPulse-Impact-${new Date().getTime()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: 'Kartu dampak telah diunduh.',
+            confirmButtonColor: '#059669'
+        });
+    } catch (err) {
+        console.error(err);
+        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal mengunduh kartu.' });
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
+</script>
+
+<!-- Chart Initialization Script -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('impactChart').getContext('2d');
+        const chartData = <%- JSON.stringify(chartData) %>;
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: chartData.labels,
+                datasets: [{
+                    label: 'Berat Sampah (kg)',
+                    data: chartData.values,
+                    borderColor: '#10b981',
+                    borderWidth: 4,
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.04)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+
+        <% if (breakdownData.values.length > 0) { %>
+            const bctx = document.getElementById('breakdownChart').getContext('2d');
+            const bData = <%- JSON.stringify(breakdownData) %>;
+            new Chart(bctx, {
+                type: 'doughnut',
+                data: {
+                    labels: bData.labels,
+                    datasets: [{
+                        data: bData.values,
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { display: false } }
+                }
+            });
+        <% } %>
+    });
+</script>

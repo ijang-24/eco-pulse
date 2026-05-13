@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .playfair { font-family: 'Playfair Display', serif; }
+        .cert-border {
+            border: 20px solid transparent;
+            border-image: url('https://www.transparenttextures.com/patterns/gold-scale.png') 30 round;
+            background: white;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4 lg:p-10">
+
+    <div id="certificate" class="relative max-w-4xl w-full bg-white shadow-2xl p-1 lg:p-2 rounded-sm cert-border overflow-hidden">
+        <!-- Decoration Background -->
+        <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-emerald-500/5 blur-3xl"></div>
+        <div class="absolute -left-20 -bottom-20 h-64 w-64 rounded-full bg-lime-500/5 blur-3xl"></div>
+
+        <div class="relative border-4 border-emerald-900/10 p-12 lg:p-20 text-center">
+            <!-- Seal/Badge -->
+            <div class="absolute top-10 right-10 flex flex-col items-center opacity-20">
+                <div class="h-24 w-24 rounded-full border-4 border-emerald-800 flex items-center justify-center p-2">
+                    <div class="h-full w-full rounded-full border-2 border-emerald-800 border-dashed flex items-center justify-center">
+                        <span class="text-xs font-black text-emerald-900 uppercase">ECO-VERIFIED</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logo & Brand -->
+            <div class="flex flex-col items-center mb-10">
+                <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-xl mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.989-2.386l-.548-.547z" />
+                    </svg>
+                </div>
+                <h3 class="text-xs font-black uppercase tracking-[0.4em] text-emerald-800">Sertifikat Apresiasi Lingkungan</h3>
+            </div>
+
+            <!-- Content -->
+            <h1 class="playfair text-4xl lg:text-6xl text-slate-900 mb-8 tracking-tight">Eco-Pulse Hero</h1>
+            
+            <p class="text-sm font-medium text-slate-500 uppercase tracking-widest mb-10">Sertifikat ini diberikan dengan bangga kepada:</p>
+            
+            <div class="relative inline-block mb-10">
+                <h2 class="text-3xl lg:text-5xl font-black text-emerald-700 italic px-10"><%= user.username %></h2>
+                <div class="h-0.5 w-full bg-gradient-to-r from-transparent via-emerald-600 to-transparent mt-2"></div>
+            </div>
+
+            <p class="max-w-2xl mx-auto text-slate-600 leading-relaxed mb-12">
+                Atas dedikasi luar biasa dalam pengelolaan sampah mandiri dan kontribusi aktif terhadap kelestarian lingkungan di lingkungan <span class="font-bold text-slate-900">RT <%= user.address_rt %> / RW <%= user.address_rw %></span>. 
+                Anda telah berhasil mengumpulkan total <span class="font-black text-emerald-600"><%= totalWeight %> kg</span> sampah terpilah.
+            </p>
+
+            <!-- Impact Stats Section -->
+            <div class="grid grid-cols-2 gap-8 max-w-lg mx-auto mb-16">
+                <div class="p-6 rounded-3xl bg-emerald-50 border border-emerald-100">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2">Emisi CO2 Dikurangi</p>
+                    <p class="text-2xl font-black text-emerald-800"><%= impact.co2 %> kg</p>
+                </div>
+                <div class="p-6 rounded-3xl bg-lime-50 border border-lime-100">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-lime-600 mb-2">Pohon Diselamatkan</p>
+                    <p class="text-2xl font-black text-lime-800"><%= impact.trees %></p>
+                </div>
+            </div>
+
+            <!-- Footer Info -->
+            <div class="flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-20 pt-10 border-t border-slate-100">
+                <div class="text-left">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Diterbitkan pada:</p>
+                    <p class="text-sm font-black text-slate-800"><%= date %></p>
+                </div>
+                <div class="flex flex-col items-center">
+                    <div class="h-16 w-32 border-b-2 border-emerald-900/20 mb-2 flex items-center justify-center italic text-emerald-900 opacity-50">
+                        Official Eco-Pulse Seal
+                    </div>
+                    <p class="text-[10px] font-black uppercase tracking-widest text-emerald-800">Eco-Pulse System Verified</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">ID Sertifikat:</p>
+                    <p class="text-xs font-mono text-slate-800">#<%= user.id.toString().substring(0,8).toUpperCase() %>-<%= new Date().getFullYear() %></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="fixed bottom-6 flex gap-4 no-print">
+        <button onclick="window.print()" class="flex items-center gap-2 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl hover:bg-slate-800 transition active:scale-95">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            Cetak Sertifikat
+        </button>
+        <a href="/dashboard" class="flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-600 shadow-xl hover:bg-slate-50 transition active:scale-95">
+            Kembali ke Dashboard
+        </a>
+    </div>
+
+</body>
+</html>

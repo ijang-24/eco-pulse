@@ -4,7 +4,7 @@
             <h1 class="text-3xl font-black text-slate-950">Kelola Reward</h1>
             <p class="text-sm text-slate-500 font-medium">Atur katalog hadiah untuk penukaran poin warga.</p>
         </div>
-        <button onclick="document.getElementById(\"addModal\").style.display=\"flex\"" class="rounded-2xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-700 shadow-lg shadow-emerald-200">
+        <button onclick="document.getElementById('addModal').style.display='flex'" class="rounded-2xl bg-emerald-600 px-6 py-3 font-bold text-white transition hover:bg-emerald-700 shadow-lg shadow-emerald-200">
             + Tambah Reward
         </button>
     </div>
@@ -37,7 +37,7 @@
                     <input type="file" name="image" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" accept="image/*">
                 </div>
                 <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="document.getElementById(\"addModal\").style.display=\"none\"" class="flex-1 rounded-2xl bg-slate-100 py-4 font-bold text-slate-600 transition hover:bg-slate-200">Batal</button>
+                    <button type="button" onclick="document.getElementById('addModal').style.display='none'" class="flex-1 rounded-2xl bg-slate-100 py-4 font-bold text-slate-600 transition hover:bg-slate-200">Batal</button>
                     <button type="submit" class="flex-1 rounded-2xl bg-emerald-600 py-4 font-bold text-white transition hover:bg-emerald-700">Simpan</button>
                 </div>
             </form>
@@ -64,9 +64,9 @@
                 <p class="text-sm text-slate-500 line-clamp-2 mb-6"><%= reward.description %></p>
                 
                 <div class="mt-auto flex items-center gap-2">
-                    <button onclick=\"openEditModal(<%= JSON.stringify(reward).replace(/\"/g, \"&quot;\") %>)\" class=\"flex-1 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition hover:bg-slate-800\">Edit</button>
-                    <form action=\"/admin/rewards/delete/<%= reward.id %>\" method=\"POST\" onsubmit=\"return confirm(\"Hapus reward ini?\")\" class=\"flex-1\">
-                        <button type=\"submit\" class=\"w-full rounded-xl bg-rose-50 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-100\">Hapus</button>
+                    <button onclick="openEditModal(<%= reward.id %>)" class="flex-1 rounded-xl bg-slate-900 py-3 text-sm font-bold text-white transition hover:bg-slate-800">Edit</button>
+                    <form action="/admin/rewards/delete/<%= reward.id %>" method="POST" class="flex-1">
+                        <button type="button" onclick="confirmDelete(this)" class="w-full rounded-xl bg-rose-50 py-3 text-sm font-bold text-rose-600 transition hover:bg-rose-100">Hapus</button>
                     </form>
                 </div>
             </div>
@@ -74,48 +74,75 @@
     </div>
 
     <!-- Modal Edit Reward -->
-    <div id=\"editModal\" style=\"display:none;\" class=\"fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-6\">
-        <div class=\"w-full max-w-lg rounded-[2.5rem] bg-white p-8 shadow-2xl\">
-            <h2 class=\"text-2xl font-black text-slate-900 mb-6\">Edit Reward</h2>
-            <form id=\"editForm\" action=\"\" method=\"POST\" enctype=\"multipart/form-data\" class=\"space-y-4\">
-                <div class=\"space-y-1\">
-                    <label class=\"text-xs font-bold uppercase tracking-widest text-slate-400 ml-1\">Nama Reward</label>
-                    <input type=\"text\" name=\"title\" id=\"editTitle\" class=\"w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500\" required>
+    <div id="editModal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-6">
+        <div class="w-full max-w-lg rounded-[2.5rem] bg-white p-8 shadow-2xl">
+            <h2 class="text-2xl font-black text-slate-900 mb-6">Edit Reward</h2>
+            <form id="editForm" action="" method="POST" enctype="multipart/form-data" class="space-y-4">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Nama Reward</label>
+                    <input type="text" name="title" id="editTitle" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" required>
                 </div>
-                <div class=\"space-y-1\">
-                    <label class=\"text-xs font-bold uppercase tracking-widest text-slate-400 ml-1\">Deskripsi</label>
-                    <textarea name=\"description\" id=\"editDescription\" class=\"w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500\" required></textarea>
+                <div class="space-y-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Deskripsi</label>
+                    <textarea name="description" id="editDescription" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" required></textarea>
                 </div>
-                <div class=\"grid grid-cols-2 gap-4\">
-                    <div class=\"space-y-1\">
-                        <label class=\"text-xs font-bold uppercase tracking-widest text-slate-400 ml-1\">Harga (PTS)</label>
-                        <input type=\"number\" name=\"points_cost\" id=\"editPoints\" class=\"w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500\" required>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Harga (PTS)</label>
+                        <input type="number" name="points_cost" id="editPoints" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" required>
                     </div>
-                    <div class=\"space-y-1\">
-                        <label class=\"text-xs font-bold uppercase tracking-widest text-slate-400 ml-1\">Stok</label>
-                        <input type=\"number\" name=\"stock\" id=\"editStock\" class=\"w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500\" required>
+                    <div class="space-y-1">
+                        <label class="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Stok</label>
+                        <input type="number" name="stock" id="editStock" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" required>
                     </div>
                 </div>
-                <div class=\"space-y-1\">
-                    <label class=\"text-xs font-bold uppercase tracking-widest text-slate-400 ml-1\">Foto Baru (Opsional)</label>
-                    <input type=\"file\" name=\"image\" class=\"w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500\" accept=\"image/*\">
+                <div class="space-y-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Foto Baru (Opsional)</label>
+                    <input type="file" name="image" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" accept="image/*">
                 </div>
-                <div class=\"flex gap-4 pt-4\">
-                    <button type=\"button\" onclick=\"document.getElementById(\"editModal\").style.display=\"none\"\" class=\"flex-1 rounded-2xl bg-slate-100 py-4 font-bold text-slate-600 transition hover:bg-slate-200\">Batal</button>
-                    <button type=\"submit\" class=\"flex-1 rounded-2xl bg-emerald-600 py-4 font-bold text-white transition hover:bg-emerald-700\">Simpan Perubahan</button>
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="document.getElementById('editModal').style.display='none'" class="flex-1 rounded-2xl bg-slate-100 py-4 font-bold text-slate-600 transition hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="flex-1 rounded-2xl bg-emerald-600 py-4 font-bold text-white transition hover:bg-emerald-700">Simpan Perubahan</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        function openEditModal(reward) {
-            document.getElementById(\"editForm\").action = \"/admin/rewards/edit/\" + reward.id;
-            document.getElementById(\"editTitle\").value = reward.title;
-            document.getElementById(\"editDescription\").value = reward.description;
-            document.getElementById(\"editPoints\").value = reward.points_cost;
-            document.getElementById(\"editStock\").value = reward.stock;
-            document.getElementById(\"editModal\").style.display = \"flex\";
+        const rewardsData = <%- JSON.stringify(rewards) %>;
+        function openEditModal(id) {
+            const reward = rewardsData.find(r => r.id === id);
+            if (!reward) return;
+            
+            document.getElementById("editForm").action = "/admin/rewards/edit/" + reward.id;
+            document.getElementById("editTitle").value = reward.title;
+            document.getElementById("editDescription").value = reward.description;
+            document.getElementById("editPoints").value = reward.points_cost;
+            document.getElementById("editStock").value = reward.stock;
+            document.getElementById("editModal").style.display = "flex";
+        }
+
+        function confirmDelete(button) {
+            const form = button.closest('form');
+            Swal.fire({
+                title: 'Hapus Reward?',
+                text: "Tindakan ini tidak dapat dibatalkan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#e11d48',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'rounded-[2.5rem]',
+                    confirmButton: 'rounded-xl font-bold px-6 py-3',
+                    cancelButton: 'rounded-xl font-bold px-6 py-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         }
     </script>
 </section>

@@ -32,16 +32,25 @@
         <% if (redemptions && redemptions.length > 0) { %>
             <div class="grid gap-6 md:grid-cols-2">
                 <% redemptions.forEach(redemption => { %>
-                    <div class="group relative overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm transition hover:shadow-xl hover:border-indigo-100 flex items-center gap-6">
-                        <div class="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-indigo-50 text-3xl group-hover:scale-110 transition">
-                            🎁
+                    <div class="group relative overflow-hidden rounded-[2rem] border border-slate-100 bg-white p-6 shadow-sm transition hover:shadow-xl hover:border-indigo-100 flex flex-col sm:flex-row items-center gap-6">
+                        <!-- QR Code Section -->
+                        <div class="relative shrink-0 p-3 rounded-2xl bg-white shadow-[0_8px_30px_rgba(0,0,0,0.04)] ring-1 ring-slate-100 group-hover:rotate-3 transition-transform">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=<%= redemption.voucher_code %>&bgcolor=ffffff&color=0f172a&margin=2" 
+                                 alt="QR Code" 
+                                 class="h-24 w-24 rounded-lg">
+                            <div class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-slate-950/5"></div>
                         </div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-slate-900 text-lg"><%= redemption.reward.title %></h4>
+
+                        <div class="flex-1 text-center sm:text-left">
+                            <div class="flex items-center justify-center sm:justify-start gap-2">
+                                <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600">Active Voucher</p>
+                            </div>
+                            <h4 class="font-bold text-slate-900 text-lg mt-1"><%= redemption.reward.title %></h4>
                             <p class="text-xs text-slate-500 mt-1 italic">Ditukar pada: <%= new Date(redemption.redeemed_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+                            
                             <div class="mt-4 flex flex-col gap-2">
-                                <span class="text-[10px] font-black uppercase tracking-widest text-slate-400">Kode Voucher:</span>
-                                <div class="relative inline-flex items-center justify-between gap-2 rounded-xl bg-slate-950 px-4 py-3 text-white">
+                                <div class="relative inline-flex items-center justify-between gap-4 rounded-xl bg-slate-950 px-4 py-3 text-white shadow-lg">
                                     <code class="text-sm font-black tracking-[0.2em] text-amber-400"><%= redemption.voucher_code || 'N/A' %></code>
                                     <button onclick="copyToClipboard('<%= redemption.voucher_code %>')" class="relative z-10 p-1 text-slate-400 hover:text-white transition cursor-pointer active:scale-90" title="Copy Code">
                                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -51,7 +60,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-indigo-50/50 group-hover:scale-150 transition duration-500"></div>
+                        <div class="absolute -right-4 -bottom-4 h-24 w-24 rounded-full bg-indigo-50/30 group-hover:scale-150 transition duration-500"></div>
                     </div>
                 <% }) %>
             </div>

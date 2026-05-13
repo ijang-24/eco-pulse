@@ -1,92 +1,266 @@
 <section class="max-w-2xl mx-auto">
-    <div class="relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-[0_20px_60px_rgba(34,197,94,0.12)] border border-emerald-100 lg:p-12">
-        <!-- Decoration -->
-        <div class="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-emerald-50 blur-2xl"></div>
-        <div class="absolute -left-10 -bottom-10 h-32 w-32 rounded-full bg-lime-50 blur-2xl"></div>
+    <style>
+        .scanner-line {
+            height: 4px;
+            background: linear-gradient(to bottom, transparent, #10b981, transparent);
+            box-shadow: 0 0 20px #10b981;
+            position: absolute;
+            width: 100%;
+            z-index: 10;
+            animation: scan 2s linear infinite;
+        }
+        @keyframes scan {
+            0% { top: 0; }
+            100% { top: 100%; }
+        }
+        .scanning-overlay {
+            background: rgba(16, 185, 129, 0.1);
+            backdrop-filter: blur(2px);
+        }
+    </style>
 
+    <div class="relative overflow-hidden rounded-[2.5rem] bg-white p-8 shadow-[0_20px_60px_rgba(34,197,94,0.12)] border border-emerald-100 lg:p-12">
         <div class="relative">
-            <div class="flex items-center gap-4 mb-8">
+            <div class="flex items-center gap-4 mb-10">
                 <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-600 text-white shadow-lg shadow-emerald-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Track Your Impact</h1>
-                    <p class="text-sm font-medium text-slate-500 italic">Setiap kilogram sampah terpilah adalah langkah nyata untuk bumi.</p>
+                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Setor Sampah</h1>
+                    <p class="text-sm font-medium text-slate-500 italic">Lengkapi detail sampah Anda di bawah ini.</p>
                 </div>
             </div>
-            
+
             <form id="wasteTrackForm" action="/waste/track" method="POST" enctype="multipart/form-data" class="space-y-8">
-                <div class="grid gap-6">
-                    <div class="rounded-2xl bg-emerald-50 p-6 border border-emerald-100">
-                        <div class="flex items-center gap-3 mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                            </svg>
-                            <h3 class="font-bold text-emerald-900">AI-Powered Detection Active</h3>
+                <input type="hidden" name="input_mode" id="inputMode" value="manual">
+                <input type="hidden" name="ai_results_json" id="aiResultsJson">
+
+                <div class="space-y-8">
+                    <!-- 1. WASTE TYPE (MANUAL FIRST) -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">1. Jenis Sampah</label>
+                        <div class="relative">
+                            <select id="manualSelect" name="manual_waste_type" class="w-full px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50 text-slate-900 font-bold focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 focus:outline-none transition appearance-none cursor-pointer" required>
+                                <option value="">-- Pilih Jenis Sampah --</option>
+                                <option value="organic">Sampah Organik</option>
+                                <option value="plastic">Sampah Plastik</option>
+                                <option value="paper">Sampah Kertas</option>
+                                <option value="metal">Sampah Logam</option>
+                                <option value="glass">Sampah Kaca</option>
+                                <option value="electronic">Sampah Elektronik / E-Waste</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-5 flex items-center pointer-events-none text-slate-400">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
                         </div>
-                        <p class="text-xs text-emerald-700 leading-relaxed">Sistem AI kami akan secara otomatis mendeteksi berbagai jenis sampah (plastik, kertas, logam, dll) dari foto yang Anda unggah. Anda tidak perlu memilih jenis sampah secara manual lagi!</p>
                     </div>
 
+                    <!-- 2. WEIGHT -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Estimasi Total Berat (kg)</label>
+                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">2. Estimasi Berat</label>
                         <div class="relative group">
-                            <input type="number" step="0.1" name="weight" class="w-full px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50/50 text-slate-900 font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 focus:outline-none transition group-hover:bg-white" placeholder="e.g., 2.5" required>
+                            <input type="number" step="0.1" name="weight" class="w-full px-5 py-4 rounded-2xl border border-slate-100 bg-slate-50 text-slate-900 font-bold placeholder:text-slate-300 focus:ring-4 focus:ring-emerald-100 focus:border-emerald-500 focus:outline-none transition" placeholder="e.g., 2.5" required>
                             <div class="absolute inset-y-0 right-5 flex items-center">
                                 <span class="text-sm font-black text-slate-300 uppercase tracking-widest">kg</span>
                             </div>
                         </div>
                     </div>
 
+                    <!-- 3. PHOTO UPLOAD & AI OPTIONS -->
                     <div>
-                        <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400 mb-3">Bukti Foto</label>
-                        <div class="relative">
-                            <input type="file" name="photo" accept="image/*" class="w-full cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/30 px-5 py-8 text-center text-sm font-bold text-slate-500 transition hover:border-emerald-300 hover:bg-emerald-50/50" required>
+                        <div class="flex items-center justify-between mb-3">
+                            <label class="block text-xs font-bold uppercase tracking-[0.2em] text-slate-400">3. Bukti Foto</label>
+                            <label class="flex items-center gap-2 cursor-pointer group">
+                                <span class="text-[10px] font-black uppercase text-slate-400 group-hover:text-emerald-600 transition">Gunakan Deteksi AI?</span>
+                                <div class="relative inline-flex items-center">
+                                    <input type="checkbox" id="aiToggle" class="sr-only peer">
+                                    <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </div>
+                            </label>
                         </div>
-                        <p class="mt-3 text-[10px] font-bold uppercase tracking-widest text-slate-400 text-center">* Pastikan semua jenis sampah terlihat jelas dalam satu foto.</p>
+                        
+                        <div class="relative group">
+                            <!-- Dropzone -->
+                            <div id="dropzone" class="relative cursor-pointer rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 px-5 py-10 text-center transition hover:border-emerald-300 hover:bg-emerald-50/50">
+                                <input type="file" id="photoInput" name="photo" accept="image/*" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required>
+                                <div class="flex flex-col items-center gap-3">
+                                    <div class="p-3 rounded-full bg-white shadow-sm text-slate-400 group-hover:text-emerald-500 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 00-2 2z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-xs font-bold text-slate-400">Ketuk untuk mengambil/unggah foto</p>
+                                </div>
+                            </div>
+
+                            <!-- Preview & AI Display -->
+                            <div id="previewContainer" class="hidden relative mt-4 space-y-4">
+                                <div class="relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-white aspect-video bg-slate-100">
+                                    <img id="photoPreview" src="#" alt="Preview" class="w-full h-full object-cover">
+                                    
+                                    <!-- Scanner Animation Overlay -->
+                                    <div id="scannerOverlay" class="absolute inset-0 hidden">
+                                        <div class="scanner-line"></div>
+                                        <div class="absolute inset-0 scanning-overlay flex flex-col items-center justify-center">
+                                            <div class="px-4 py-2 bg-slate-900/80 rounded-full backdrop-blur-md">
+                                                <p class="text-[10px] font-black text-white uppercase tracking-widest animate-pulse">Scanning...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <button type="button" id="removePhoto" class="absolute top-3 right-3 z-20 p-2 bg-rose-500 text-white rounded-xl shadow-lg hover:bg-rose-600 transition">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <!-- AI Info Results -->
+                                <div id="aiAnalysisResult" class="hidden p-4 rounded-2xl bg-emerald-600 text-white shadow-lg animate-in slide-in-from-top-2 duration-300">
+                                    <div class="flex items-center justify-between mb-2">
+                                        <h4 class="text-[10px] font-black uppercase tracking-widest text-emerald-100">AI Terdeteksi</h4>
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-white" viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <p id="aiLabelText" class="text-xs font-bold opacity-80 mb-1 italic"></p>
+                                    <p id="aiFinalType" class="text-sm font-black capitalize"></p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <button id="submitBtn" type="submit" class="w-full group relative flex items-center justify-center gap-3 overflow-hidden rounded-2xl bg-emerald-600 px-8 py-5 font-black text-white shadow-xl shadow-emerald-200 transition active:scale-[0.98]">
                     <span class="absolute inset-0 bg-gradient-to-r from-emerald-600 to-lime-500 opacity-0 transition group-hover:opacity-100"></span>
-                    <span class="relative">Analisis AI & Kirim Laporan</span>
+                    <span id="btnText" class="relative">Kirim Laporan</span>
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 z-[100] hidden flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md p-6 text-center text-white">
-        <div class="relative mb-8">
-            <div class="h-24 w-24 rounded-full border-4 border-emerald-500/20"></div>
-            <div class="absolute inset-0 h-24 w-24 animate-spin rounded-full border-4 border-t-emerald-500"></div>
-            <div class="absolute inset-0 flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-emerald-400 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-            </div>
-        </div>
-        <h3 class="text-2xl font-black tracking-tight mb-2">AI sedang menganalisis foto...</h3>
-        <p class="max-w-xs text-sm font-medium text-emerald-100/70 leading-relaxed">Mohon tunggu sebentar, sistem sedang memilah jenis sampah Anda secara otomatis.</p>
-    </div>
+    <!-- AI Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
 
     <script>
-        const form = document.getElementById('wasteTrackForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const loadingOverlay = document.getElementById('loadingOverlay');
+        const photoInput = document.getElementById('photoInput');
+        const photoPreview = document.getElementById('photoPreview');
+        const previewContainer = document.getElementById('previewContainer');
+        const scannerOverlay = document.getElementById('scannerOverlay');
+        const dropzone = document.getElementById('dropzone');
+        const aiAnalysisResult = document.getElementById('aiAnalysisResult');
+        const aiLabelText = document.getElementById('aiLabelText');
+        const aiFinalType = document.getElementById('aiFinalType');
+        const aiResultsJson = document.getElementById('aiResultsJson');
+        const aiToggle = document.getElementById('aiToggle');
+        const manualSelect = document.getElementById('manualSelect');
+        const inputModeInput = document.getElementById('inputMode');
 
-        form.addEventListener('submit', () => {
-            // Show loading screen
-            loadingOverlay.classList.remove('hidden');
-            loadingOverlay.classList.add('flex');
-            
-            // Disable button to prevent multiple submissions
-            submitBtn.disabled = true;
-            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            submitBtn.innerHTML = 'Memproses...';
+        let net = null;
+
+        // Function to load model once
+        async function getModel() {
+            if (!net) {
+                console.log('Loading MobileNet...');
+                net = await mobilenet.load();
+            }
+            return net;
+        }
+
+        photoInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                    previewContainer.classList.remove('hidden');
+                    dropzone.classList.add('hidden');
+                    
+                    // If toggle is already ON, scan immediately after image loads
+                    if (aiToggle.checked) {
+                        photoPreview.onload = () => runAiScan();
+                    }
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+
+        // Trigger scan if toggle is switched ON after photo is already there
+        aiToggle.addEventListener('change', () => {
+            if (aiToggle.checked && photoPreview.src && photoPreview.src !== '#' && !previewContainer.classList.contains('hidden')) {
+                runAiScan();
+            } else if (!aiToggle.checked) {
+                aiAnalysisResult.classList.add('hidden');
+            }
+        });
+
+        async function runAiScan() {
+            // Reset & Show Scanner
+            aiAnalysisResult.classList.add('hidden');
+            scannerOverlay.classList.remove('hidden');
+            inputModeInput.value = 'ai';
+
+            try {
+                const model = await getModel();
+                const predictions = await model.classify(photoPreview);
+                const bestGuess = predictions[0].className;
+                const detectedType = mapToCategory(predictions);
+
+                setTimeout(() => {
+                    scannerOverlay.classList.add('hidden');
+                    
+                    // Auto-fill result
+                    manualSelect.value = detectedType;
+                    
+                    aiLabelText.innerText = `Benda: "${bestGuess}"`;
+                    aiFinalType.innerText = `Tipe: ${detectedType}`;
+                    aiResultsJson.value = JSON.stringify([{ type: detectedType, percentage: 100 }]);
+                    aiAnalysisResult.classList.remove('hidden');
+                    
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'AI Berhasil: ' + detectedType,
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }, 1200);
+            } catch (err) {
+                console.error('AI Error:', err);
+                scannerOverlay.classList.add('hidden');
+                Swal.fire({ icon: 'error', title: 'AI Error', text: 'Gagal memproses pindaian.' });
+            }
+        }
+
+        function mapToCategory(predictions) {
+            const allLabels = predictions.map(p => p.className.toLowerCase()).join(' | ');
+            if (allLabels.match(/laptop|computer|notebook|keyboard|mouse|phone|cellular|monitor|screen|electronic|webcam|camera|modem|router|joystick|pad|battery|cable|wire|plug|socket|television|tv|radio|stereo|speaker/)) return 'electronic';
+            if (allLabels.match(/bottle|plastic|cup|water|container|packaging|polypropylene|pvc|polyethylene|bubble|wrap|bag|sachet/)) return 'plastic';
+            if (allLabels.match(/paper|book|envelope|cardboard|carton|newspaper|magazine|notebook|flyer|brochure|box/)) return 'paper';
+            if (allLabels.match(/can|tin|metal|iron|steel|aluminum|foil|brass|copper|wire|nut|bolt|screw|tool/)) return 'metal';
+            if (allLabels.match(/glass|bottle|jar|wine|beer|crystal|vial|mirror|lens/)) return 'glass';
+            return 'organic';
+        }
+
+        document.getElementById('removePhoto').addEventListener('click', () => {
+            photoInput.value = '';
+            previewContainer.classList.add('hidden');
+            dropzone.classList.remove('hidden');
+            aiAnalysisResult.classList.add('hidden');
+            aiResultsJson.value = '';
+            inputModeInput.value = 'manual';
+        });
+
+        // If user manually changes type while AI is on, switch to manual mode
+        manualSelect.addEventListener('change', () => {
+            if (manualSelect.value !== '') {
+                inputModeInput.value = 'manual';
+            }
         });
     </script>
-        </div>
-    </div>
 </section>

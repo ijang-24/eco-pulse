@@ -1,183 +1,241 @@
 <section class="space-y-8">
-    <!-- Admin Header Stats -->
-    <div class="grid gap-6 md:grid-cols-3">
-        <div class="rounded-[2.5rem] bg-gradient-to-br from-emerald-600 to-teal-500 p-8 text-white shadow-xl shadow-emerald-900/10">
-            <p class="text-xs font-bold uppercase tracking-widest opacity-80">Total Warga</p>
-            <h3 class="mt-2 text-4xl font-black"><%= stats.users %></h3>
-            <p class="mt-1 text-sm font-medium opacity-70">Warga terdaftar aktif</p>
+    <div class="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+            <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Admin Dashboard</h1>
+            <p class="mt-1 text-slate-500 font-medium italic">Verifikasi setoran sampah dan pantau statistik komunitas.</p>
         </div>
-        <div class="rounded-[2.5rem] bg-gradient-to-br from-amber-500 to-orange-400 p-8 text-white shadow-xl shadow-amber-900/10">
-            <p class="text-xs font-bold uppercase tracking-widest opacity-80">Total Sampah</p>
-            <h3 class="mt-2 text-4xl font-black"><%= stats.waste.toFixed(1) %> <span class="text-lg">kg</span></h3>
-            <p class="mt-1 text-sm font-medium opacity-70">Berhasil didaur ulang</p>
-        </div>
-        <div class="rounded-[2.5rem] bg-gradient-to-br from-sky-600 to-indigo-500 p-8 text-white shadow-xl shadow-sky-900/10">
-            <p class="text-xs font-bold uppercase tracking-widest opacity-80">Ekosistem Poin</p>
-            <h3 class="mt-2 text-4xl font-black"><%= stats.points.toLocaleString() %></h3>
-            <p class="mt-1 text-sm font-medium opacity-70">Poin dalam sirkulasi</p>
+        <div class="flex flex-wrap gap-3">
+            <form action="/admin/verify-bulk-ai" method="POST">
+                <button type="submit" class="flex items-center gap-2 rounded-2xl bg-slate-900 px-6 py-3.5 text-sm font-bold text-white shadow-xl transition hover:bg-slate-800 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    Bulk Verify (AI Match > 85%)
+                </button>
+            </form>
+            <a href="/admin/rewards" class="flex items-center gap-2 rounded-2xl bg-white border border-slate-200 px-6 py-3.5 text-sm font-bold text-slate-700 shadow-sm transition hover:bg-slate-50 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                Manage Rewards
+            </a>
         </div>
     </div>
 
-    <!-- Quick Actions -->
-    <div class="flex flex-wrap gap-4">
-        <a href="/admin/rewards" class="flex items-center gap-3 rounded-2xl bg-slate-900 px-6 py-4 font-bold text-white transition hover:bg-slate-800">
-            <span>🎁 Kelola Reward</span>
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clip-rule="evenodd" />
-            </svg>
-        </a>
+    <!-- Stats Overview -->
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Users</p>
+            <div class="mt-2 flex items-baseline gap-2">
+                <p class="text-3xl font-black text-slate-900"><%= stats.users %></p>
+                <p class="text-sm font-bold text-slate-400">Citizens</p>
+            </div>
+        </div>
+        <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Total Waste Collected</p>
+            <div class="mt-2 flex items-baseline gap-2">
+                <p class="text-3xl font-black text-emerald-600"><%= Number(stats.waste).toFixed(1) %></p>
+                <p class="text-sm font-bold text-slate-400">Kilograms</p>
+            </div>
+        </div>
+        <div class="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm">
+            <p class="text-xs font-bold uppercase tracking-widest text-slate-400">Points Circulating</p>
+            <div class="mt-2 flex items-baseline gap-2">
+                <p class="text-3xl font-black text-amber-500"><%= stats.points %></p>
+                <p class="text-sm font-bold text-slate-400">PTS</p>
+            </div>
+        </div>
     </div>
 
-    <!-- Verification Queue -->
-    <div class="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-sm">
-        <div class="mb-8 flex items-center justify-between">
-            <h2 class="text-2xl font-black text-slate-950">Queue Validasi</h2>
-            <span class="rounded-full bg-amber-100 px-4 py-1.5 text-xs font-bold text-amber-700">Pending: <%= logs.filter(l => l.status === "pending").length %></span>
-        </div>
-
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead>
-                    <tr class="border-b border-slate-50 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-                        <th class="px-6 py-4">Warga</th>
-                        <th class="px-6 py-4">Detail Sampah</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                    <% logs.forEach(log => { %>
-                        <tr>
-                            <td class="px-6 py-6">
-                                <p class="font-bold text-slate-900"><%= log.username %></p>
-                                <p class="text-xs text-slate-400">RT <%= log.rt %> / RW <%= log.rw %></p>
-                            </td>
-                            <td class="px-6 py-6">
-                                <div class="flex items-center gap-4">
-                                    <% if (log.photo_url) { %>
-                                        <div class="h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all" 
-                                             onclick="openImageModal('<%= log.photo_url %>')">
-                                            <img src="<%= log.photo_url %>" alt="Bukti Sampah" class="h-full w-full object-cover">
-                                        </div>
-                                    <% } else { %>
-                                        <div class="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-xl border border-slate-100 bg-slate-50 text-slate-300">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                            </svg>
-                                        </div>
-                                    <% } %>
-                                    <div>
-                                        <div class="flex flex-wrap gap-1 mb-1">
-                                            <% if (log.items && log.items.length > 0) { %>
-                                                <% log.items.forEach(item => { %>
-                                                    <span class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 ring-1 ring-emerald-100">
-                                                        <%= item.waste_type %>
-                                                    </span>
-                                                <% }) %>
+    <div class="grid gap-8 lg:grid-cols-3">
+        <!-- Main Logs Table -->
+        <div class="lg:col-span-2 overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-sm">
+            <div class="border-b border-slate-50 bg-slate-50/50 px-8 py-5">
+                <h2 class="font-black text-slate-900 tracking-tight">Recent Activity</h2>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="border-b border-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                            <th class="px-8 py-4">User</th>
+                            <th class="px-6 py-4">Waste Details</th>
+                            <th class="px-6 py-4">Status</th>
+                            <th class="px-8 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <% logs.forEach(log => { %>
+                            <tr class="transition hover:bg-slate-50/50">
+                                <td class="px-8 py-6">
+                                    <p class="font-bold text-slate-900"><%= log.username %></p>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">RT <%= log.rt %> / RW <%= log.rw %></p>
+                                </td>
+                                <td class="px-6 py-6">
+                                    <div class="flex items-center gap-4">
+                                        <% if (log.photo_url) { %>
+                                            <div class="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border-2 border-white shadow-md bg-slate-100 cursor-pointer hover:ring-2 hover:ring-emerald-500 transition-all" 
+                                                 onclick="openImageModal('<%= log.photo_url %>')">
+                                                <img src="<%= log.photo_url %>" alt="Proof" class="h-full w-full object-cover">
+                                            </div>
+                                        <% } %>
+                                        <div>
+                                            <div class="flex flex-wrap gap-1 mb-1">
+                                                <% if (log.items && log.items.length > 0) { %>
+                                                    <% log.items.forEach(item => { %>
+                                                        <span class="inline-flex items-center rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-bold text-emerald-700 ring-1 ring-emerald-100">
+                                                            <%= item.waste_type %>
+                                                        </span>
+                                                    <% }) %>
+                                                <% } %>
+                                            </div>
+                                            <p class="text-xs text-slate-500 font-medium">
+                                                Total: <span class="text-slate-900 font-bold"><%= log.weight %> kg</span> 
+                                                · <span class="text-emerald-600 font-bold">+<%= log.points_earned %> PTS</span>
+                                            </p>
+                                            <% if (log.ai_analysis) { %>
+                                                <div class="mt-1 flex flex-wrap gap-1">
+                                                    <% log.ai_analysis.forEach(a => { %>
+                                                        <span class="text-[8px] font-bold text-slate-400 italic bg-slate-50 px-1 rounded">
+                                                            <%= a.type %>(<%= a.percentage %>%)
+                                                        </span>
+                                                    <% }) %>
+                                                </div>
                                             <% } %>
                                         </div>
-                                        <p class="text-xs text-slate-500 font-medium">
-                                            Total: <span class="text-slate-900 font-bold"><%= log.total_weight %> kg</span> 
-                                            · <span class="text-emerald-600 font-bold">+<%= log.total_points %> PTS</span>
-                                        </p>
-                                        <% if (log.ai_analysis) { %>
-                                            <p class="mt-1 text-[9px] font-bold text-slate-400 italic">
-                                                AI Deteksi: <%= log.ai_analysis.map(a => `${a.type}(${a.percentage}%)`).join(', ') %>
-                                            </p>
-                                        <% } %>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-6">
-                                <span class="rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest 
-                                    <%= log.status === "verified" ? "bg-emerald-100 text-emerald-700" : 
-                                       log.status === "rejected" ? "bg-rose-100 text-rose-700" : "bg-amber-100 text-amber-700" %>">
-                                    <%= log.status %>
-                                </span>
-                            </td>
-                            <td class="px-6 py-6 text-right">
-                                <% if (log.status === "pending") { %>
-                                    <form action="/admin/verify/<%= log.id %>" method="POST" class="inline-flex gap-2">
-                                        <button name="status" value="verified" class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 transition hover:bg-emerald-600 hover:text-white flex items-center justify-center" title="Setujui">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M0 0h24v24H0z" fill="none"/><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
-                                        </button>
-                                        <button name="status" value="rejected" class="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white flex items-center justify-center" title="Tolak">
-                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
-                                        </button>
-                                    </form>
-                                <% } else { %>
-                                    <div class="text-right">
-                                        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1">Diverifikasi oleh:</p>
-                                        <div class="inline-flex items-center gap-2 rounded-lg bg-slate-50 px-3 py-1.5 border border-slate-100">
-                                            <div class="h-4 w-4 rounded-full bg-slate-200 flex items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <span class="text-xs font-bold text-slate-700"><%= log.verified_by_name || 'System' %></span>
+                                </td>
+                                <td class="px-6 py-6">
+                                    <span class="inline-flex rounded-full px-3 py-1 text-[10px] font-black uppercase tracking-widest
+                                        <%= log.status === 'verified' ? 'bg-emerald-100 text-emerald-700' : 
+                                           log.status === 'rejected' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' %>">
+                                        <%= log.status %>
+                                    </span>
+                                    <% if (log.verified_by_name) { %>
+                                        <p class="mt-1 text-[8px] font-bold text-slate-400 uppercase tracking-tighter">By: <%= log.verified_by_name %></p>
+                                    <% } %>
+                                </td>
+                                <td class="px-8 py-6 text-right">
+                                    <% if (log.status === 'pending') { %>
+                                        <div class="flex justify-end gap-2">
+                                            <form action="/admin/verify/<%= log.id %>" method="POST">
+                                                <input type="hidden" name="status" value="verified">
+                                                <button type="submit" class="rounded-xl bg-emerald-500 p-2.5 text-white shadow-lg shadow-emerald-100 transition hover:bg-emerald-600 active:scale-90">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                </button>
+                                            </form>
+                                            <form action="/admin/verify/<%= log.id %>" method="POST">
+                                                <input type="hidden" name="status" value="rejected">
+                                                <button type="submit" class="rounded-xl bg-rose-500 p-2.5 text-white shadow-lg shadow-rose-100 transition hover:bg-rose-600 active:scale-90">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                                                    </svg>
+                                                </button>
+                                            </form>
                                         </div>
-                                    </div>
-                                <% } %>
-                            </td>
-                        </tr>
+                                    <% } else { %>
+                                        <form action="/admin/delete/<%= log.id %>" method="POST" onsubmit="return confirm('Hapus log ini selamanya?')">
+                                            <button type="submit" class="text-slate-300 transition hover:text-rose-500">
+                                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    <% } %>
+                                </td>
+                            </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column Stats -->
+        <div class="space-y-8">
+            <!-- RT Performance -->
+            <div class="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 tracking-tight mb-6">RT/RW Performance</h3>
+                <div class="space-y-6">
+                    <% rtPerformance.forEach(rt => { %>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-bold text-slate-700 uppercase tracking-tight"><%= rt.label %></span>
+                                <span class="text-xs font-black text-emerald-600"><%= Number(rt.weight).toFixed(1) %> kg</span>
+                            </div>
+                            <div class="h-2 w-full overflow-hidden rounded-full bg-slate-50 ring-1 ring-slate-100">
+                                <div class="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" style="width: <%= Math.min(100, (rt.weight / 100) * 100) %>%"></div>
+                            </div>
+                        </div>
                     <% }) %>
-                </tbody>
-            </table>
+                </div>
+            </div>
+
+            <!-- Category Breakdown -->
+            <div class="rounded-[2.5rem] border border-slate-100 bg-white p-8 shadow-sm">
+                <h3 class="text-xl font-black text-slate-900 tracking-tight mb-6">Community Waste</h3>
+                <div class="relative h-60">
+                    <canvas id="adminBreakdownChart"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 </section>
 
-<!-- Image Preview Modal -->
-<div id="imageModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 transition-opacity duration-300 opacity-0">
-    <div class="relative max-w-4xl w-full transform scale-95 transition-transform duration-300">
-        <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white hover:text-emerald-400 transition">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+<!-- Image Modal -->
+<div id="imageModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/90 backdrop-blur-md p-4" onclick="closeImageModal()">
+    <div class="relative max-w-4xl w-full">
+        <img id="modalImage" src="" alt="Full Proof" class="w-full rounded-3xl shadow-2xl">
+        <button class="absolute top-4 right-4 h-12 w-12 rounded-full bg-white/20 text-white backdrop-blur hover:bg-white/40 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
         </button>
-        <img id="modalImage" src="" alt="Preview Bukti Sampah" class="w-full h-auto rounded-3xl shadow-2xl">
     </div>
 </div>
 
 <script>
     function openImageModal(url) {
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImage');
-        const content = modal.querySelector('div');
-        
-        modalImg.src = url;
-        modal.classList.remove('hidden');
-        
-        // Trigger animations
-        setTimeout(() => {
-            modal.classList.add('opacity-100');
-            content.classList.remove('scale-95');
-            content.classList.add('scale-100');
-        }, 10);
-        
-        // Close on ESC
-        document.addEventListener('keydown', handleEsc);
-        // Close on backdrop click
-        modal.onclick = (e) => {
-            if (e.target === modal) closeImageModal();
-        };
+        document.getElementById('modalImage').src = url;
+        document.getElementById('imageModal').classList.remove('hidden');
+        document.getElementById('imageModal').classList.add('flex');
+        document.body.style.overflow = 'hidden';
     }
-
     function closeImageModal() {
-        const modal = document.getElementById('imageModal');
-        const content = modal.querySelector('div');
-        
-        modal.classList.remove('opacity-100');
-        content.classList.remove('scale-100');
-        content.classList.add('scale-95');
-        
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            document.removeEventListener('keydown', handleEsc);
-        }, 300);
+        document.getElementById('imageModal').classList.add('hidden');
+        document.getElementById('imageModal').classList.remove('flex');
+        document.body.style.overflow = 'auto';
     }
 
-    function handleEsc(e) {
-        if (e.key === 'Escape') closeImageModal();
-    }
+    document.addEventListener('DOMContentLoaded', () => {
+        const ctx = document.getElementById('adminBreakdownChart').getContext('2d');
+        const breakdownData = <%- JSON.stringify(breakdownData) %>;
+        
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: breakdownData.labels,
+                datasets: [{
+                    data: breakdownData.values,
+                    backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '75%',
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            usePointStyle: true,
+                            padding: 20,
+                            font: { weight: 'bold', size: 10 }
+                        }
+                    }
+                }
+            }
+        });
+    });
 </script>
