@@ -1,203 +1,250 @@
-<section class="space-y-8">
-    <div class="grid gap-8 xl:grid-cols-[1.2fr_0.8fr] xl:items-stretch">
-        <div class="relative overflow-hidden rounded-[2.75rem] bg-gradient-to-br from-emerald-500 via-lime-400 to-sky-300 px-8 py-10 text-white shadow-[0_30px_100px_rgba(34,197,94,0.22)] lg:px-12 lg:py-14">
-            <div class="absolute -right-10 top-10 h-52 w-52 rounded-full bg-white/18 blur-3xl"></div>
-            <div class="absolute bottom-0 left-0 h-40 w-40 rounded-full bg-sky-200/30 blur-3xl"></div>
-            <div class="absolute bottom-10 right-24 h-24 w-24 rounded-full border border-white/25 bg-white/10"></div>
+<!-- Load Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;800&display=swap" rel="stylesheet">
 
-            <div class="relative">
-                <p class="inline-flex rounded-full border border-white/30 bg-white/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.22em] text-white">Community Climate Platform</p>
-                <h1 class="mt-6 max-w-4xl text-5xl font-extrabold leading-[1.02] lg:text-6xl">Bangun budaya lingkungan warga dengan data yang hidup, terang, dan bisa diverifikasi.</h1>
-                <p class="mt-6 max-w-2xl text-lg leading-8 text-emerald-50">
-                    Eco-Pulse membantu komunitas mencatat sampah terpilah, memvalidasi kontribusi warga, dan mengubah aktivitas harian menjadi progres lingkungan yang terlihat nyata.
-                </p>
+<style>
+    :root {
+        --deep-green: #064E3B;
+        --leaf-green: #10B981;
+        --soft-cream: #F8FAF7;
+    }
+    
+    .playfair { font-family: 'Playfair Display', serif; }
+    .inter { font-family: 'Inter', sans-serif; }
 
-                <div class="mt-10 flex flex-wrap gap-4">
-                    <a href="/register" class="inline-flex items-center rounded-full bg-white px-6 py-3.5 text-sm font-bold text-emerald-700 transition hover:bg-emerald-50">Mulai Kontribusi</a>
-                    <a href="/dashboard" class="inline-flex items-center rounded-full border border-white/35 bg-white/10 px-6 py-3.5 text-sm font-bold text-white transition hover:bg-white/18">Lihat Dashboard</a>
-                </div>
+    /* Animations */
+    .floating-leaf {
+        animation: float 8s ease-in-out infinite;
+        pointer-events: none;
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        50% { transform: translateY(-30px) rotate(15deg); }
+    }
 
-                <div class="mt-12 grid gap-4 sm:grid-cols-3">
-                    <div class="rounded-2xl border border-white/20 bg-white/14 p-5 backdrop-blur-sm">
-                        <p class="text-sm text-emerald-50/90">Log Aktivitas</p>
-                        <p class="mt-2 text-3xl font-extrabold">Waste</p>
-                        <p class="mt-2 text-sm text-white/85">Warga mengirim kontribusi berbasis bukti.</p>
-                    </div>
-                    <div class="rounded-2xl border border-white/20 bg-white/14 p-5 backdrop-blur-sm">
-                        <p class="text-sm text-emerald-50/90">Validasi</p>
-                        <p class="mt-2 text-3xl font-extrabold">Review</p>
-                        <p class="mt-2 text-sm text-white/85">Admin menjaga kualitas dan kepercayaan data.</p>
-                    </div>
-                    <div class="rounded-2xl border border-white/20 bg-white/14 p-5 backdrop-blur-sm">
-                        <p class="text-sm text-emerald-50/90">Output</p>
-                        <p class="mt-2 text-3xl font-extrabold">Impact</p>
-                        <p class="mt-2 text-sm text-white/85">Poin dan insight komunitas tampil dalam satu sistem.</p>
-                    </div>
-                </div>
-            </div>
+    /* Premium Leaf Card */
+    .leaf-card-v2 {
+        position: relative;
+        width: 120px;
+        height: 150px;
+        background: var(--leaf-green);
+        border-radius: 50% 50% 50% 50% / 12% 88% 12% 88%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+        flex-shrink: 0;
+    }
+
+    .pulse-live {
+        animation: pulse-red 2s infinite;
+    }
+    @keyframes pulse-red {
+        0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+    }
+
+    .step-card {
+        background: white;
+        border: 1px solid rgba(6, 78, 59, 0.05);
+        border-radius: 2.5rem;
+        transition: all 0.4s ease;
+    }
+    .step-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 30px 60px rgba(6, 78, 59, 0.08);
+    }
+</style>
+
+<div class="inter text-slate-900 bg-[var(--soft-cream)] overflow-hidden">
+    
+    <!-- Hero Section: Digital Waste Management Focused -->
+    <section class="relative min-h-screen flex items-center justify-center text-white overflow-hidden py-20">
+        <div class="absolute inset-0 bg-[var(--deep-green)]">
+            <img src="https://images.unsplash.com/photo-1532996122724-e3c354a0b15b?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover opacity-30">
         </div>
-
-        <div class="grid gap-6">
-            <div class="rounded-[2.2rem] border border-emerald-100 bg-white/92 p-8 shadow-[0_18px_60px_rgba(34,197,94,0.10)] backdrop-blur">
-                <div class="flex items-start justify-between gap-4">
-                    <div>
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">Why It Matters</p>
-                        <h2 class="mt-3 text-3xl font-extrabold text-slate-900">Data warga jadi operasi lingkungan.</h2>
-                    </div>
-                    <span class="rounded-full bg-emerald-50 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">Live Concept</span>
-                </div>
-
-                <div class="mt-8 space-y-4">
-                    <div class="rounded-2xl bg-emerald-50 p-5">
-                        <p class="text-base font-bold text-emerald-900">Crowdsourced Action</p>
-                        <p class="mt-2 text-sm leading-6 text-emerald-800">Aktivitas warga dikumpulkan sebagai sumber data utama, bukan hanya laporan top-down.</p>
-                    </div>
-                    <div class="rounded-2xl bg-sky-50 p-5">
-                        <p class="text-base font-bold text-sky-900">Verifiable System</p>
-                        <p class="mt-2 text-sm leading-6 text-sky-800">Foto bukti dan review admin menjaga agar kontribusi yang dihitung tetap kredibel.</p>
-                    </div>
-                    <div class="rounded-2xl bg-amber-50 p-5">
-                        <p class="text-base font-bold text-amber-900">Community Incentive</p>
-                        <p class="mt-2 text-sm leading-6 text-amber-800">Poin, leaderboard, dan reward mengubah kebiasaan hijau menjadi sistem yang berulang.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="rounded-[2.2rem] bg-gradient-to-br from-white via-emerald-50 to-sky-50 p-8 shadow-[0_18px_60px_rgba(56,189,248,0.10)]">
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Operational Snapshot</p>
-                <div class="mt-6 grid gap-4 sm:grid-cols-2">
-                    <div class="rounded-2xl border border-emerald-100 bg-white/85 p-5">
-                        <p class="text-sm text-slate-500">Input Model</p>
-                        <p class="mt-2 text-2xl font-extrabold text-slate-900">Photo + Weight</p>
-                    </div>
-                    <div class="rounded-2xl border border-sky-100 bg-white/85 p-5">
-                        <p class="text-sm text-slate-500">Validation Layer</p>
-                        <p class="mt-2 text-2xl font-extrabold text-slate-900">Admin Review</p>
-                    </div>
-                    <div class="rounded-2xl border border-lime-100 bg-white/85 p-5">
-                        <p class="text-sm text-slate-500">Community Unit</p>
-                        <p class="mt-2 text-2xl font-extrabold text-slate-900">RT / RW</p>
-                    </div>
-                    <div class="rounded-2xl border border-amber-100 bg-white/85 p-5">
-                        <p class="text-sm text-slate-500">Motivation Engine</p>
-                        <p class="mt-2 text-2xl font-extrabold text-slate-900">Points & Rewards</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="rounded-[2.5rem] border border-emerald-100 bg-white/92 p-8 shadow-[0_18px_60px_rgba(34,197,94,0.08)] backdrop-blur lg:p-10">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-                <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">Core Features</p>
-                <h2 class="mt-2 text-4xl font-extrabold text-slate-900">Fitur yang membentuk alur inti Eco-Pulse.</h2>
-            </div>
-            <p class="max-w-2xl text-sm leading-6 text-slate-500">Landing page ini tetap mempertahankan elemen inti sebelumnya: waste tracker, leaderboard, reward, dan dashboard impact. Saya hanya naikkan kualitas presentasinya.</p>
-        </div>
-
-        <div class="mt-10 grid gap-5 lg:grid-cols-4">
-            <a href="/waste/track" class="group rounded-[1.75rem] border border-emerald-100 bg-gradient-to-br from-emerald-50 to-white p-6 transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(34,197,94,0.12)]">
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-200/80">
-                    <span class="relative h-7 w-7">
-                        <span class="absolute left-1 top-0 h-5 w-5 -rotate-12 rounded-tl-[100%] rounded-tr-[20%] rounded-bl-[20%] rounded-br-[100%] bg-emerald-700"></span>
-                        <span class="absolute right-1 top-1 h-4 w-1 rounded-full bg-white/90 rotate-[28deg]"></span>
-                    </span>
-                </div>
-                <h3 class="mt-6 text-2xl font-extrabold text-slate-900">Waste Tracker</h3>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Catat sampah terpilah, unggah bukti, dan bangun jejak kontribusi warga yang bisa direview.</p>
-                <span class="mt-6 inline-flex text-sm font-bold text-emerald-700 transition group-hover:text-emerald-800">Track Now</span>
-            </a>
-
-            <a href="/leaderboard" class="group rounded-[1.75rem] border border-sky-100 bg-gradient-to-br from-sky-50 to-white p-6 transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(56,189,248,0.12)]">
-                <div class="flex h-14 w-14 items-end justify-center gap-1 rounded-2xl bg-sky-200/80 px-3 pb-3">
-                    <span class="h-4 w-2 rounded-full bg-sky-700"></span>
-                    <span class="h-6 w-2 rounded-full bg-sky-600"></span>
-                    <span class="h-8 w-2 rounded-full bg-sky-500"></span>
-                </div>
-                <h3 class="mt-6 text-2xl font-extrabold text-slate-900">Leaderboard</h3>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Bandingkan performa antar lingkungan untuk mendorong kompetisi yang sehat dan transparan.</p>
-                <span class="mt-6 inline-flex text-sm font-bold text-sky-700 transition group-hover:text-sky-800">View Rankings</span>
-            </a>
-
-            <a href="/rewards" class="group rounded-[1.75rem] border border-amber-100 bg-gradient-to-br from-amber-50 to-white p-6 transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(251,191,36,0.14)]">
-                <div class="flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-200/80">
-                    <span class="relative block h-7 w-7 rounded-full border-2 border-amber-700">
-                        <span class="absolute inset-x-2 top-1.5 h-1.5 rounded-full bg-amber-700"></span>
-                        <span class="absolute inset-x-2 bottom-1.5 h-1.5 rounded-full bg-amber-700"></span>
-                    </span>
-                </div>
-                <h3 class="mt-6 text-2xl font-extrabold text-slate-900">Green Rewards</h3>
-                <p class="mt-3 text-sm leading-6 text-slate-600">Hubungkan aksi ramah lingkungan dengan insentif yang nyata dan relevan bagi warga.</p>
-                <span class="mt-6 inline-flex text-sm font-bold text-amber-700 transition group-hover:text-amber-800">Check Rewards</span>
-            </a>
-
-            <a href="/dashboard" class="group rounded-[1.75rem] border border-lime-100 bg-gradient-to-br from-lime-100 via-emerald-100 to-sky-100 p-6 transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(132,204,22,0.12)]">
-                <div class="flex h-14 w-14 items-end justify-center gap-1 rounded-2xl bg-white/90 px-3 pb-3">
-                    <span class="h-3 w-2 rounded-full bg-emerald-400"></span>
-                    <span class="h-5 w-2 rounded-full bg-lime-500"></span>
-                    <span class="h-8 w-2 rounded-full bg-sky-500"></span>
-                    <span class="h-6 w-2 rounded-full bg-emerald-600"></span>
-                </div>
-                <h3 class="mt-6 text-2xl font-extrabold text-slate-900">Impact Dashboard</h3>
-                <p class="mt-3 text-sm text-slate-700">Lihat total poin, riwayat kontribusi, dan progress lingkungan dalam satu tampilan utama.</p>
-                <span class="mt-6 inline-flex text-sm font-bold text-emerald-700 transition group-hover:text-emerald-800">Open Dashboard</span>
-            </a>
-        </div>
-    </div>
-
-    <div class="grid gap-8 xl:grid-cols-[0.9fr_1.1fr]">
-        <div class="rounded-[2.5rem] bg-gradient-to-br from-white via-sky-50 to-emerald-50 p-8 shadow-[0_18px_60px_rgba(56,189,248,0.10)] lg:p-10">
-            <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-700">Impact Vision</p>
-            <h2 class="mt-3 text-4xl font-extrabold text-slate-900">Visualisasi dampak yang terasa hidup, bukan sekadar angka.</h2>
-            <p class="mt-5 text-base leading-7 text-slate-600">
-                Eco-Pulse dirancang untuk membantu komunitas melihat korelasi antara partisipasi warga, validasi admin, dan hasil lingkungan yang lebih nyata dari waktu ke waktu.
+        <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[var(--soft-cream)] opacity-90"></div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-6 text-center">
+            <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/20 backdrop-blur-md text-emerald-700 text-[10px] font-black uppercase tracking-[0.4em] mb-8 border border-emerald-500/30">
+                <span class="flex h-2 w-2 rounded-full bg-emerald-500 pulse-live"></span>
+                Smart Waste Management System
+            </span>
+            <h1 class="playfair text-5xl md:text-7xl lg:text-9xl font-black text-[var(--deep-green)] mb-6 leading-tight">
+                TRASH TO <br><span class="italic text-emerald-600 underline decoration-emerald-200">TREASURE</span>
+            </h1>
+            <p class="max-w-2xl mx-auto text-lg md:text-xl text-slate-700 leading-relaxed mb-12 font-medium">
+                Kelola sampah Anda secara digital, dapatkan poin, dan <br class="hidden md:block">tukar dengan berbagai reward menarik dari lingkungan Anda.
             </p>
-            <a href="/dashboard" class="mt-8 inline-flex items-center rounded-full bg-gradient-to-r from-emerald-600 to-sky-500 px-6 py-3.5 text-sm font-bold text-white transition hover:from-emerald-700 hover:to-sky-600">Explore Impact Dashboard</a>
+            <div class="flex flex-col sm:flex-row justify-center gap-6">
+                <a href="/register" class="px-12 py-5 bg-[var(--deep-green)] text-white font-black text-lg rounded-2xl shadow-2xl hover:scale-105 transition-transform text-center">Mulai Menabung Sampah</a>
+                <a href="/login" class="px-12 py-5 bg-white text-[var(--deep-green)] border border-emerald-100 font-black text-lg rounded-2xl hover:bg-emerald-50 transition-all text-center">Masuk ke Dashboard</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Statistics: High-Contrast Dark Mode -->
+    <section class="py-32 lg:py-48 bg-[var(--deep-green)] relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[120px]"></div>
+        <div class="absolute inset-0 opacity-[0.05]" style="background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');"></div>
+
+        <div class="max-w-7xl mx-auto px-6 text-center relative z-10">
+            <div class="inline-flex items-center gap-3 mb-10 bg-white/5 backdrop-blur-md px-6 py-2.5 rounded-full border border-white/10 shadow-2xl">
+                <span class="flex h-3 w-3 rounded-full bg-emerald-400 pulse-live"></span>
+                <span class="text-emerald-400 text-xs font-black uppercase tracking-[0.3em]">Digital Waste Bank Live</span>
+            </div>
+            
+            <div class="relative inline-block mb-12">
+                <div class="absolute inset-0 bg-emerald-500 blur-[100px] opacity-30 scale-150"></div>
+                <h2 class="relative text-[100px] md:text-[150px] lg:text-[220px] font-black text-white leading-none tracking-tighter italic">
+                    <%= userCount %><span class="text-emerald-400">.</span>
+                </h2>
+                <div class="absolute -right-4 md:-right-8 top-10 bg-emerald-500 text-[var(--deep-green)] px-4 py-1 rounded-lg font-black text-xs md:text-sm rotate-12 shadow-xl uppercase tracking-widest">Warga Aktif</div>
+            </div>
+
+            <h3 class="playfair text-3xl md:text-5xl lg:text-6xl font-black text-white mb-10">Komunitas Pengelola Sampah</h3>
+            <div class="max-w-2xl mx-auto h-1 bg-gradient-to-r from-transparent via-emerald-500 to-transparent mb-12"></div>
+            <p class="max-w-3xl mx-auto text-emerald-100/70 text-lg md:text-xl lg:text-2xl leading-relaxed font-medium italic px-4">
+                "Mengubah setiap gram limbah menjadi nilai ekonomi bagi <%= userCount %> warga yang telah bergabung."
+            </p>
         </div>
 
-        <div class="rounded-[2.5rem] border border-white/70 bg-white/75 p-5 shadow-[0_18px_60px_rgba(34,197,94,0.10)] backdrop-blur lg:p-6">
-            <div class="grid h-full gap-4 rounded-[2rem] bg-gradient-to-br from-emerald-100 via-white to-sky-100 p-6 lg:grid-cols-[1fr_0.85fr]">
-                <div class="flex flex-col justify-between rounded-[1.75rem] bg-white/80 p-6 shadow-sm">
-                    <div>
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-700">Community Pulse</p>
-                        <h3 class="mt-3 text-3xl font-extrabold text-slate-900">Data reciprocity untuk skala lingkungan warga.</h3>
-                        <p class="mt-4 text-sm leading-6 text-slate-600">Warga memberi data. Sistem memberi insight, poin, dan motivasi yang terus berulang.</p>
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-none translate-y-[1px]">
+            <svg class="relative block w-full h-[60px] md:h-[100px]" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V0C40.52,20.43,84.13,38.36,128.51,51.64,179.35,66.81,254.21,62.59,321.39,56.44Z" fill="#F8FAF7"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Workflow Section -->
+    <section class="py-24 lg:py-32 bg-[var(--soft-cream)] relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="text-center mb-24">
+                <span class="text-emerald-600 font-black uppercase tracking-[0.4em] text-[10px]">Workflow Digital</span>
+                <h2 class="playfair text-4xl md:text-6xl lg:text-8xl font-black text-[var(--deep-green)] mt-8 leading-tight">Alur Kerja <span class="text-emerald-600 italic underline decoration-emerald-200">Modern.</span></h2>
+            </div>
+
+            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 relative">
+                <!-- Step 1 -->
+                <div class="group relative bg-white p-8 lg:p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(6,78,59,0.08)] border border-emerald-50 transition-all duration-500 hover:-translate-y-4">
+                    <div class="absolute -top-6 left-10 w-16 h-16 bg-[var(--deep-green)] rounded-2xl flex items-center justify-center text-emerald-400 shadow-xl rotate-3 group-hover:rotate-12 transition-transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                     </div>
-                    <div class="mt-8 grid gap-3 sm:grid-cols-3">
-                        <div class="rounded-2xl bg-emerald-50 p-4">
-                            <p class="text-xs uppercase tracking-[0.18em] text-emerald-600">Track</p>
-                            <p class="mt-2 font-extrabold text-slate-900">Waste</p>
-                        </div>
-                        <div class="rounded-2xl bg-sky-50 p-4">
-                            <p class="text-xs uppercase tracking-[0.18em] text-sky-600">Review</p>
-                            <p class="mt-2 font-extrabold text-slate-900">Admin</p>
-                        </div>
-                        <div class="rounded-2xl bg-amber-50 p-4">
-                            <p class="text-xs uppercase tracking-[0.18em] text-amber-600">Reward</p>
-                            <p class="mt-2 font-extrabold text-slate-900">Points</p>
-                        </div>
-                    </div>
+                    <span class="block text-right playfair text-5xl font-black text-slate-100 mb-4">01</span>
+                    <h4 class="text-xl font-black text-[var(--deep-green)] mb-4 uppercase tracking-tighter">Pilah Sampah</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed font-medium">Pisahkan sampah dari rumah untuk mempermudah proses daur ulang.</p>
                 </div>
 
-                <div class="grid gap-4">
-                    <div class="rounded-[1.75rem] bg-gradient-to-br from-emerald-500 to-lime-400 p-5 text-white shadow-sm">
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-50">01</p>
-                        <p class="mt-3 text-2xl font-extrabold">Capture</p>
-                        <p class="mt-2 text-sm leading-6 text-white/90">Log aktivitas warga dengan bukti yang jelas.</p>
+                <!-- Step 2 -->
+                <div class="group relative bg-white p-8 lg:p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(6,78,59,0.08)] border border-emerald-50 transition-all duration-500 hover:-translate-y-4 lg:mt-12">
+                    <div class="absolute -top-6 left-10 w-16 h-16 bg-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-xl -rotate-3 group-hover:rotate-0 transition-transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </div>
-                    <div class="rounded-[1.75rem] bg-gradient-to-br from-sky-500 to-cyan-400 p-5 text-white shadow-sm">
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-sky-50">02</p>
-                        <p class="mt-3 text-2xl font-extrabold">Validate</p>
-                        <p class="mt-2 text-sm leading-6 text-white/90">Pastikan kualitas data lewat review admin.</p>
+                    <span class="block text-right playfair text-5xl font-black text-slate-100 mb-4">02</span>
+                    <h4 class="text-xl font-black text-[var(--deep-green)] mb-4 uppercase tracking-tighter">Setor Digital</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed font-medium">Lapor sampah Anda melalui aplikasi dengan bukti foto yang valid.</p>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="group relative bg-white p-8 lg:p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(6,78,59,0.08)] border border-emerald-50 transition-all duration-500 hover:-translate-y-4">
+                    <div class="absolute -top-6 left-10 w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center text-white shadow-xl rotate-6 group-hover:rotate-0 transition-transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     </div>
-                    <div class="rounded-[1.75rem] bg-gradient-to-br from-amber-400 to-orange-300 p-5 text-white shadow-sm">
-                        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-amber-50">03</p>
-                        <p class="mt-3 text-2xl font-extrabold">Reward</p>
-                        <p class="mt-2 text-sm leading-6 text-white/90">Ubah partisipasi menjadi motivasi yang terus tumbuh.</p>
+                    <span class="block text-right playfair text-5xl font-black text-slate-100 mb-4">03</span>
+                    <h4 class="text-xl font-black text-[var(--deep-green)] mb-4 uppercase tracking-tighter">Dapatkan Poin</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed font-medium">Poin otomatis masuk ke akun Anda setelah verifikasi admin selesai.</p>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="group relative bg-white p-8 lg:p-10 rounded-[3rem] shadow-[0_30px_100px_rgba(6,78,59,0.08)] border border-emerald-50 transition-all duration-500 hover:-translate-y-4 lg:mt-12">
+                    <div class="absolute -top-6 left-10 w-16 h-16 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl -rotate-6 group-hover:rotate-0 transition-transform">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
                     </div>
+                    <span class="block text-right playfair text-5xl font-black text-slate-100 mb-4">04</span>
+                    <h4 class="text-xl font-black text-[var(--deep-green)] mb-4 uppercase tracking-tighter">Tukar Voucher</h4>
+                    <p class="text-slate-500 text-sm leading-relaxed font-medium">Tukar poin dengan berbagai voucher menarik langsung dari aplikasi.</p>
                 </div>
             </div>
         </div>
-    </div>
-</section>
+    </section>
+
+
+    <!-- Testimonial Section: Mobile Optimized -->
+    <section class="bg-[var(--deep-green)] py-20 lg:py-32 text-white relative overflow-hidden" x-data="{ active: 0, testimonials: [
+        { name: 'Dewi Kartika', role: 'Warga RW 05', text: 'Eco-Pulse mengubah cara RT kami berinteraksi. Sampah bukan lagi masalah, tapi jadi sumber tabungan warga.', img: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=200' },
+        { name: 'Budi Santoso', role: 'Ketua RT 04', text: 'Sistemnya sangat transparan. Admin sangat cepat memverifikasi data. Poin yang dikumpul sangat berguna!', img: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200' },
+        { name: 'Siti Aminah', role: 'Ibu Rumah Tangga', text: 'Dulu bingung mau buang minyak jelantah dan plastik ke mana, sekarang tinggal lapor di aplikasi dan dapat poin belanja.', img: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=200' },
+        { name: 'Agus Pratama', role: 'Relawan Lingkungan', text: 'Dashboard adminnya sangat membantu kami melacak data sampah per warga secara akurat. Modern sekali!', img: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=200' }
+    ]}">
+        <div class="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 lg:gap-20 items-center">
+            <!-- Form Card -->
+            <div class="bg-emerald-600/10 backdrop-blur-xl border border-emerald-500/20 p-8 md:p-12 lg:p-16 rounded-[3rem] shadow-2xl order-2 lg:order-1">
+                <h3 class="playfair text-3xl md:text-5xl font-black mb-6">Mulai <span class="italic text-emerald-400">Hari Ini.</span></h3>
+                <p class="text-emerald-100/60 mb-10 text-base md:text-lg leading-relaxed">Bergabunglah dengan ribuan pahlawan lingkungan lainnya sekarang.</p>
+                <form action="/register" class="space-y-4">
+                    <input type="text" placeholder="Nama Lengkap" class="w-full px-6 py-4 md:py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:bg-white/10 focus:outline-none transition">
+                    <input type="email" placeholder="Alamat Email" class="w-full px-6 py-4 md:py-5 rounded-2xl bg-white/5 border border-white/10 text-white placeholder-white/30 focus:bg-white/10 focus:outline-none transition">
+                    <button class="w-full py-4 md:py-5 bg-emerald-500 text-white font-black text-lg md:text-xl rounded-2xl shadow-xl hover:bg-emerald-400 transition transform hover:-translate-y-1">
+                        Daftar Sekarang
+                    </button>
+                </form>
+            </div>
+
+            <!-- Testimonial Slider -->
+            <div class="relative flex flex-col justify-center order-1 lg:order-2 text-center lg:text-left">
+                <div class="mb-8 lg:mb-12 flex justify-center lg:justify-start">
+                    <div class="h-16 w-16 md:h-20 md:w-20 items-center justify-center rounded-2xl md:rounded-[2rem] bg-emerald-500/10 border border-emerald-400/20 text-emerald-400 flex">
+                        <svg class="h-8 w-8 md:h-10 md:w-10" fill="currentColor" viewBox="0 0 32 32"><path d="M9.352 4C4.456 7.456 1 13.12 1 19.36c0 5.088 3.072 8.064 6.624 8.064 3.36 0 5.856-2.688 5.856-5.856 0-3.168-2.208-5.472-5.088-5.472-.576 0-1.344.096-1.536.192.48-3.264 3.552-7.104 6.624-9.024L9.352 4zm16.512 0c-4.8 3.456-8.256 9.12-8.256 15.36 0 5.088 3.072 8.064 6.624 8.064 3.264 0 5.856-2.688 5.856-5.856 0-3.168-2.304-5.472-5.184-5.472-.576 0-1.248.096-1.44.192.48-3.264 3.456-7.104 6.528-9.024L25.864 4z" /></svg>
+                    </div>
+                </div>
+                
+                <div class="relative min-h-[280px] md:min-h-[320px]">
+                    <template x-for="(t, index) in testimonials" :key="index">
+                        <div x-show="active === index" x-transition.opacity.duration.500ms class="absolute inset-0 flex flex-col justify-center">
+                            <p class="text-xl md:text-3xl lg:text-4xl font-medium italic leading-relaxed mb-8 md:mb-12 text-emerald-50" x-text="`&quot;${t.text}&quot;`"></p>
+                            <div class="flex flex-col lg:flex-row items-center gap-4 md:gap-6">
+                                <img :src="t.img" class="w-16 h-16 md:w-20 md:h-20 rounded-full border-4 border-emerald-500/20 shadow-xl">
+                                <div>
+                                    <p class="font-black text-xl md:text-2xl" x-text="t.name"></p>
+                                    <p class="text-[10px] md:text-xs font-bold uppercase tracking-[0.3em] text-emerald-400" x-text="t.role"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div class="flex justify-center lg:justify-start gap-4 mt-8 lg:mt-16">
+                    <button @click="active = (active > 0) ? active - 1 : testimonials.length - 1" class="h-12 w-12 md:h-14 md:w-14 rounded-full border border-emerald-700 flex items-center justify-center hover:bg-emerald-800 transition">
+                        <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" /></svg>
+                    </button>
+                    <button @click="active = (active < testimonials.length - 1) ? active + 1 : 0" class="h-12 w-12 md:h-14 md:w-14 rounded-full bg-emerald-500 flex items-center justify-center hover:bg-emerald-400 transition shadow-xl">
+                        <svg class="w-5 h-5 md:w-6 md:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Final Split Image Section -->
+    <section class="grid lg:grid-cols-2 bg-white">
+        <div class="p-12 md:p-24 lg:p-32 flex flex-col justify-center">
+            <span class="text-emerald-600 font-black uppercase tracking-[0.4em] text-[10px]">Eco Event</span>
+            <h2 class="playfair text-4xl md:text-5xl lg:text-7xl font-black text-[var(--deep-green)] mt-6 mb-8 leading-tight">Beraksi Bersama <br>Untuk Perubahan</h2>
+            <p class="text-slate-500 leading-relaxed text-xl mb-12">
+                Kami mengadakan kegiatan penanaman pohon dan edukasi limbah setiap bulan. Bergabunglah dengan jadwal terdekat kami.
+            </p>
+            <a href="/leaderboard" class="inline-flex items-center gap-4 text-emerald-600 font-black uppercase tracking-[0.4em] text-xs group">
+                Lihat Jadwal Kegiatan
+                <svg class="w-5 h-5 transition group-hover:translate-x-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+        </div>
+        <div class="h-[400px] lg:h-auto overflow-hidden">
+            <img src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=2070&auto=format&fit=crop" class="w-full h-full object-cover">
+        </div>
+    </section>
+
+</div>
+
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

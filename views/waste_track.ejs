@@ -143,10 +143,7 @@
         </div>
     </div>
 
-    <!-- AI Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@latest"></script>
-
+    <!-- AI Scripts: Removed heavy TFJS, using backend Gemini now -->
     <script>
         const photoInput = document.getElementById('photoInput');
         const photoPreview = document.getElementById('photoPreview');
@@ -161,17 +158,6 @@
         const manualSelect = document.getElementById('manualSelect');
         const inputModeInput = document.getElementById('inputMode');
 
-        let net = null;
-
-        // Function to load model once
-        async function getModel() {
-            if (!net) {
-                console.log('Loading MobileNet...');
-                net = await mobilenet.load();
-            }
-            return net;
-        }
-
         photoInput.addEventListener('change', function() {
             if (this.files && this.files[0]) {
                 const reader = new FileReader();
@@ -180,71 +166,80 @@
                     previewContainer.classList.remove('hidden');
                     dropzone.classList.add('hidden');
                     
-                    // If toggle is already ON, scan immediately after image loads
                     if (aiToggle.checked) {
-                        photoPreview.onload = () => runAiScan();
+                        runAiScan();
                     }
                 };
                 reader.readAsDataURL(this.files[0]);
             }
         });
 
-        // Trigger scan if toggle is switched ON after photo is already there
         aiToggle.addEventListener('change', () => {
             if (aiToggle.checked && photoPreview.src && photoPreview.src !== '#' && !previewContainer.classList.contains('hidden')) {
                 runAiScan();
             } else if (!aiToggle.checked) {
                 aiAnalysisResult.classList.add('hidden');
+                inputModeInput.value = 'manual';
             }
         });
 
         async function runAiScan() {
+            if (!photoInput.files[0]) return;
+
             // Reset & Show Scanner
             aiAnalysisResult.classList.add('hidden');
             scannerOverlay.classList.remove('hidden');
             inputModeInput.value = 'ai';
 
+            const formData = new FormData();
+            formData.append('photo', photoInput.files[0]);
+
             try {
-                const model = await getModel();
-                const predictions = await model.classify(photoPreview);
-                const bestGuess = predictions[0].className;
-                const detectedType = mapToCategory(predictions);
+                // Call our powerful Gemini Backend API
+                const response = await fetch('/api/ai/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.error) throw new Error(data.error);
+
+                const results = data.results;
+                const primary = results[0];
 
                 setTimeout(() => {
                     scannerOverlay.classList.add('hidden');
                     
                     // Auto-fill result
-                    manualSelect.value = detectedType;
+                    manualSelect.value = primary.type;
                     
-                    aiLabelText.innerText = `Benda: "${bestGuess}"`;
-                    aiFinalType.innerText = `Tipe: ${detectedType}`;
-                    aiResultsJson.value = JSON.stringify([{ type: detectedType, percentage: 100 }]);
+                    const distribution = results.map(r => `${r.type} (${r.percentage}%)`).join(', ');
+                    aiLabelText.innerText = `Analisis AI: ${distribution}`;
+                    aiFinalType.innerText = `Tipe Utama: ${primary.type}`;
+                    aiResultsJson.value = JSON.stringify(results);
                     aiAnalysisResult.classList.remove('hidden');
                     
                     Swal.fire({
                         toast: true,
                         position: 'top-end',
                         icon: 'success',
-                        title: 'AI Berhasil: ' + detectedType,
+                        title: 'AI Gemini Berhasil!',
                         showConfirmButton: false,
                         timer: 2000
                     });
-                }, 1200);
+                }, 1500);
             } catch (err) {
                 console.error('AI Error:', err);
                 scannerOverlay.classList.add('hidden');
-                Swal.fire({ icon: 'error', title: 'AI Error', text: 'Gagal memproses pindaian.' });
+                inputModeInput.value = 'manual';
+                Swal.fire({ 
+                    icon: 'warning', 
+                    title: 'AI Sedang Istirahat', 
+                    text: 'Gagal memproses pindaian. Gunakan mode manual sementara.',
+                    confirmButtonColor: '#10b981'
+                });
             }
-        }
-
-        function mapToCategory(predictions) {
-            const allLabels = predictions.map(p => p.className.toLowerCase()).join(' | ');
-            if (allLabels.match(/laptop|computer|notebook|keyboard|mouse|phone|cellular|monitor|screen|electronic|webcam|camera|modem|router|joystick|pad|battery|cable|wire|plug|socket|television|tv|radio|stereo|speaker/)) return 'electronic';
-            if (allLabels.match(/bottle|plastic|cup|water|container|packaging|polypropylene|pvc|polyethylene|bubble|wrap|bag|sachet/)) return 'plastic';
-            if (allLabels.match(/paper|book|envelope|cardboard|carton|newspaper|magazine|notebook|flyer|brochure|box/)) return 'paper';
-            if (allLabels.match(/can|tin|metal|iron|steel|aluminum|foil|brass|copper|wire|nut|bolt|screw|tool/)) return 'metal';
-            if (allLabels.match(/glass|bottle|jar|wine|beer|crystal|vial|mirror|lens/)) return 'glass';
-            return 'organic';
         }
 
         document.getElementById('removePhoto').addEventListener('click', () => {
@@ -256,7 +251,6 @@
             inputModeInput.value = 'manual';
         });
 
-        // If user manually changes type while AI is on, switch to manual mode
         manualSelect.addEventListener('change', () => {
             if (manualSelect.value !== '') {
                 inputModeInput.value = 'manual';

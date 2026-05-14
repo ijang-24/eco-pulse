@@ -93,6 +93,7 @@ let notificationsTableMissing = false;
 app.use(async (req, res, next) => {
     res.locals.user = req.session.user || null;
     res.locals.isAdminArea = req.path.startsWith('/admin');
+    res.locals.isLandingPage = req.path === '/';
     res.locals.success_msg = req.flash('success_msg');
     res.locals.error_msg = req.flash('error_msg');
     res.locals.notifications = [];
@@ -157,30 +158,61 @@ app.post('/notifications/read-all', isAuthenticated, async (req, res) => {
         });
         res.json({ success: true });
     } catch (err) {
+        console.error('Notification Error:', err);
         res.status(500).json({ error: 'Failed to update notifications' });
     }
 });
 
+// View all notifications page
+app.get('/notifications', isAuthenticated, async (req, res) => {
+    try {
+        const notifications = await prisma.notifications.findMany({
+            where: { user_id: req.session.user.id },
+            orderBy: { created_at: 'desc' },
+            take: 50
+        });
+
+        res.render('notifications', {
+            title: 'Notifications | Eco-Pulse',
+            notifications,
+            isAdminArea: req.session.user.role === 'admin'
+        });
+    } catch (err) {
+        console.error('Notifications Page Error:', err);
+        res.redirect('/dashboard');
+    }
+});
+
 // Routes
-app.get('/', (req, res) => {
-    res.render('index', { 
-        title: 'Eco-Pulse | Community Eco-Monitoring',
-        message: 'Welcome to Eco-Pulse' 
-    });
+app.get('/', async (req, res) => {
+    try {
+        const userCount = await prisma.users.count({ where: { role: 'citizen' } });
+        res.render('index', { 
+            title: 'Eco-Pulse | Community Eco-Monitoring',
+            userCount: userCount || 0
+        });
+    } catch (err) {
+        console.error('Home Error:', err);
+        res.render('index', { 
+            title: 'Eco-Pulse | Community Eco-Monitoring',
+            userCount: 0
+        });
+    }
 });
 
 // AI Config
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Note: The SDK handles versioning, but we can ensure the model name is correct.
 const visionModel = genAI.getGenerativeModel({ 
-    model: "gemini-1.5-flash",
+    model: "gemini-flash-latest",
     generationConfig: {
-        temperature: 0.1, // Lower temperature = more precise and less "creative" (accurate)
+        temperature: 0.1,
         topK: 32,
         topP: 1,
         maxOutputTokens: 1024,
     }
-});
+}, { apiVersion: 'v1beta' });
 
 app.get('/dashboard', isAuthenticated, async (req, res) => {
     try {
@@ -627,7 +659,22 @@ app.post("/api/ai/analyze", isAuthenticated, upload.single("photo"), async (req,
             return res.json({ results: [{ type: 'organic', percentage: 100 }] });
         }
 
-        const prompt = "Expert Waste Analyzer: Identify waste in this image. Categories: plastic, paper, metal, glass, organic, electronic, medical, b3. Return ONLY a JSON array. Example: [{\"type\": \"electronic\", \"percentage\": 100}]";
+        const prompt = `Expert Waste Management System: Analyze this image with high precision.
+        Your task is to identify and categorize all visible waste items.
+        Categories available: 
+        - 'plastic' (bottles, containers, wraps)
+        - 'paper' (cardboard, newspaper, office paper)
+        - 'metal' (cans, wires, foil)
+        - 'glass' (bottles, jars, broken glass)
+        - 'organic' (food waste, leaves, wood)
+        - 'electronic' (cables, circuit boards, gadgets)
+        - 'medical' (masks, gloves, syringes)
+        - 'b3' (batteries, chemicals, light bulbs)
+
+        If multiple types are present, distribute the percentage (e.g., 70% plastic, 30% paper).
+        Return ONLY a JSON array of objects. 
+        Example: [{"type": "plastic", "percentage": 70}, {"type": "paper", "percentage": 30}]
+        Ensure the percentage total is 100. Be extremely accurate.`;
         const imagePart = fileToGenerativePart(req.file.path, req.file.mimetype);
         
         console.log(`Starting AI analysis for file: ${req.file.filename}`);
@@ -802,6 +849,7 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
         }));
 
         // Calculate RT/RW Performance
+        // Calculate RT/RW Performance (Verified Only for consistency)
         const rtMap = {};
         for (const log of logs) {
             if (log.status !== 'verified') continue;
@@ -814,16 +862,21 @@ app.get("/admin/dashboard", isAdmin, async (req, res) => {
             .map(([label, weight]) => ({ label, weight }))
             .sort((a, b) => b.weight - a.weight);
 
-        // Community Waste Breakdown
-        const categoryStats = await prisma.waste_items.groupBy({
-            by: ['waste_type'],
-            where: { log: { status: 'verified' } },
-            _sum: { weight: true }
+        // Community Waste Breakdown (Show ALL for complete detection)
+        const allItems = await prisma.waste_items.findMany({
+            include: { log: true }
+        });
+
+        const breakdownMap = {};
+        allItems.forEach(item => {
+            const type = item.waste_type.trim().toLowerCase();
+            // Count occurrences instead of weight for better visibility in UI
+            breakdownMap[type] = (breakdownMap[type] || 0) + 1;
         });
 
         const breakdownData = {
-            labels: categoryStats.map(s => s.waste_type),
-            values: categoryStats.map(s => Number(s._sum.weight))
+            labels: Object.keys(breakdownMap).map(label => label.charAt(0).toUpperCase() + label.slice(1)),
+            values: Object.values(breakdownMap)
         };
 
         res.render("admin_dashboard", {
