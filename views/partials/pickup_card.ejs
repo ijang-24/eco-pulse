@@ -1,0 +1,41 @@
+<div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
+    <div class="flex justify-between items-start mb-3">
+        <div>
+            <h4 class="font-black text-slate-800 text-sm"><%= p.user.username %></h4>
+            <p class="text-[10px] font-bold text-slate-400 mt-0.5"><%= new Date(p.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) %></p>
+        </div>
+        <div class="text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-slate-50 text-slate-500 rounded-md">
+            <%= p.weight_estimate %>
+        </div>
+    </div>
+    
+    <div class="text-xs text-slate-600 mb-4 bg-slate-50 p-2 rounded-xl">
+        <span class="font-bold text-slate-800"><%= p.waste_types %></span><br>
+        <span class="opacity-80 mt-1 block"><%= p.pickup_address %></span>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex gap-2 border-t border-slate-50 pt-3">
+        <% if (p.status === 'pending') { %>
+            <form action="/admin/pickups/<%= p.id %>/status" method="POST" class="flex-1">
+                <input type="hidden" name="status" value="on_the_way">
+                <button type="submit" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-black py-2 rounded-xl transition-colors">
+                    Terima & OTW
+                </button>
+            </form>
+        <% } else if (p.status === 'on_the_way') { %>
+            <form action="/admin/pickups/<%= p.id %>/status" method="POST" class="flex-1">
+                <input type="hidden" name="status" value="completed">
+                <button type="submit" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-black py-2 rounded-xl transition-colors">
+                    Selesaikan
+                </button>
+            </form>
+            <form action="/admin/pickups/<%= p.id %>/status" method="POST" class="flex-none">
+                <input type="hidden" name="status" value="pending">
+                <button type="submit" title="Kembalikan ke Menunggu" class="w-full bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 text-xs font-black px-3 py-2 rounded-xl transition-colors">
+                    ↩
+                </button>
+            </form>
+        <% } %>
+    </div>
+</div>

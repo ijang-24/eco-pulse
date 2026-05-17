@@ -1,0 +1,69 @@
+<section class="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div>
+        <h1 class="text-3xl font-black text-slate-950">⚙️ Pengaturan Sistem</h1>
+        <p class="text-sm text-slate-500 font-medium">Atur rasio konversi poin, faktor emisi CO2, dan pertumbuhan pohon.</p>
+    </div>
+
+    <!-- Gamification Settings -->
+    <div class="overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-xl">
+        <div class="p-8 border-b border-slate-100 bg-emerald-50/30">
+            <h2 class="text-xl font-black text-slate-900">Konversi Poin Sampah</h2>
+            <p class="text-sm text-slate-500 mt-1">Nilai di bawah ini akan digunakan untuk menghitung poin warga setiap kali setoran sampah mereka diverifikasi.</p>
+        </div>
+        
+        <form action="/admin/settings/update" method="POST" class="p-8">
+            <div class="space-y-8">
+                <% configs.forEach((config, index) => { %>
+                    <div class="group relative rounded-3xl border border-slate-100 bg-slate-50/50 p-6 transition hover:bg-white hover:shadow-lg hover:border-emerald-100">
+                        <input type="hidden" name="config_ids[]" value="<%= config.id %>">
+                        
+                        <div class="flex items-center gap-4 mb-6">
+                            <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-100 text-2xl">
+                                <% if(config.waste_type === 'Plastik') { %> 🧴 <% } 
+                                else if(config.waste_type === 'Kertas') { %> 📄 <% } 
+                                else if(config.waste_type === 'Kaca') { %> 🍾 <% } 
+                                else if(config.waste_type === 'Logam') { %> 🥫 <% } 
+                                else { %> ♻️ <% } %>
+                            </div>
+                            <h3 class="text-lg font-black text-slate-900"><%= config.waste_type %></h3>
+                        </div>
+
+                        <div class="grid gap-6 md:grid-cols-3">
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black uppercase tracking-widest text-slate-400">Poin per Kg</label>
+                                <div class="relative">
+                                    <input type="number" name="points_per_kg[]" value="<%= config.points_per_kg %>" 
+                                           class="w-full rounded-2xl border-none bg-white p-4 font-bold text-slate-900 shadow-sm ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" required>
+                                    <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-emerald-600">PTS</span>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black uppercase tracking-widest text-slate-400">Faktor CO2</label>
+                                <div class="relative">
+                                    <input type="number" step="0.001" name="co2_factors[]" value="<%= config.co2_factor %>" 
+                                           class="w-full rounded-2xl border-none bg-white p-4 font-bold text-slate-900 shadow-sm ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" required>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[11px] font-black uppercase tracking-widest text-slate-400">Faktor Pohon</label>
+                                <div class="relative">
+                                    <input type="number" step="0.0001" name="tree_factors[]" value="<%= config.tree_factor %>" 
+                                           class="w-full rounded-2xl border-none bg-white p-4 font-bold text-slate-900 shadow-sm ring-1 ring-slate-200 outline-none focus:ring-2 focus:ring-emerald-500 transition-all" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+
+            <div class="mt-10 flex items-center justify-end border-t border-slate-100 pt-8">
+                <button type="submit" class="group flex items-center gap-3 rounded-2xl bg-emerald-600 px-8 py-4 font-black text-white shadow-xl shadow-emerald-200 transition-all hover:scale-[1.02] hover:bg-emerald-700 active:scale-95">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                    </svg>
+                    Simpan Perubahan
+                </button>
+            </div>
+        </form>
+    </div>
+</section>

@@ -224,32 +224,44 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
             return res.redirect('/admin/dashboard');
         }
 
-        // Parallelize initial queries
-        const [user, logs, aggregateEarned, redemptions, configs, verifiedLogsWithItems] = await Promise.all([
-            prisma.users.findUnique({ where: { id: userId } }),
-            prisma.waste_logs.findMany({
-                where: { user_id: userId },
-                include: { items: true },
-                orderBy: { created_at: 'desc' },
-                take: 5
-            }),
-            prisma.waste_logs.aggregate({
-                where: { user_id: userId, status: 'verified' },
-                _sum: { total_points: true, total_weight: true }
-            }),
-            prisma.redemptions.findMany({
-                where: { user_id: userId },
-                include: { reward: true }
-            }),
-            prisma.point_configs.findMany(),
-            prisma.waste_logs.findMany({
-                where: { user_id: userId, status: 'verified' },
-                include: { items: true }
-            })
-        ]);
+        // Sequential queries to prevent connection pool (P2024) exhaustion
+        const user = await prisma.users.findUnique({ where: { id: userId } });
+
+        const aggregateEarned = await prisma.waste_logs.aggregate({
+            where: { user_id: userId, status: 'verified' },
+            _sum: { total_points: true, total_weight: true }
+        });
+
+        const redemptionsAgg = await prisma.redemptions.findMany({
+            where: { user_id: userId },
+            select: { reward: { select: { points_cost: true } } }
+        });
+
+        const configs = await prisma.point_configs.findMany();
+
+        const logs = await prisma.waste_logs.findMany({
+            where: { user_id: userId },
+            include: { items: true },
+            orderBy: { created_at: 'desc' },
+            take: 5
+        });
+
+        const chartLogs = await prisma.waste_logs.findMany({
+            where: { user_id: userId },
+            orderBy: { created_at: 'asc' },
+            take: 15
+        });
+
+        // Use verified logs from the recent logs data, avoid a separate heavy query
+        const verifiedLogsWithItems = await prisma.waste_logs.findMany({
+            where: { user_id: userId, status: 'verified' },
+            include: { items: true },
+            take: 50 // cap to prevent large payloads
+        });
 
         const totalEarned = aggregateEarned._sum.total_points || 0;
-        const totalSpent = redemptions.reduce((sum, r) => sum + r.reward.points_cost, 0);
+        const totalSpent = redemptionsAgg.reduce((sum, r) => sum + (r.reward?.points_cost || 0), 0);
+
         
         // --- Level System ---
         const points = user.total_points || 0;
@@ -263,13 +275,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         const prevLimit = points >= 5000 ? 5000 : (points >= 1500 ? 1500 : (points >= 500 ? 500 : (points >= 100 ? 100 : 0)));
         const progress = level.nextLimit ? ((points - prevLimit) / (level.nextLimit - prevLimit)) * 100 : 100;
 
-        // --- Chart Data (Show all logs so it's not empty) ---
-        const chartLogs = await prisma.waste_logs.findMany({
-            where: { user_id: userId },
-            orderBy: { created_at: 'asc' },
-            take: 15
-        });
-
+        // --- Chart Data ---
         const chartData = {
             labels: chartLogs.map(log => new Date(log.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })),
             values: chartLogs.map(log => Number(log.total_weight))
@@ -340,6 +346,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         const communityTarget = 500;
         const communityProgress = Math.min(100, (communityTotal / communityTarget) * 100);
         
+
         res.render('dashboard', { 
             title: 'Dashboard | Eco-Pulse',
             user: user,
@@ -349,6 +356,7 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
                 ...level,
                 progress: Math.min(100, Math.max(0, progress))
             },
+
             chartData,
             breakdownData: {
                 labels: breakdownDataRaw.map(d => d.waste_type),
@@ -366,6 +374,100 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         console.error('Dashboard Error:', err);
         req.flash('error_msg', 'Server error while loading dashboard');
         res.redirect('/');
+    }
+});
+
+app.get('/pickup', isAuthenticated, async (req, res) => {
+    try {
+        const activePickups = await prisma.pickup_requests.findMany({
+            where: { user_id: req.session.user.id, status: { not: 'completed' } },
+            orderBy: { created_at: 'desc' }
+        });
+        const pastPickups = await prisma.pickup_requests.findMany({
+            where: { user_id: req.session.user.id, status: 'completed' },
+            orderBy: { created_at: 'desc' },
+            take: 5
+        });
+
+        res.render('pickup', {
+            title: 'Jemput Sampah | Eco-Pulse',
+            activePickups,
+            pastPickups
+        });
+    } catch (err) {
+        console.error('Pickup Page Error:', err);
+        req.flash('error_msg', 'Gagal memuat halaman jemput sampah.');
+        res.redirect('/dashboard');
+    }
+});
+
+app.post('/pickup/request', isAuthenticated, async (req, res) => {
+    const { weight_estimate, waste_types, pickup_address } = req.body;
+    
+    if (!weight_estimate || !waste_types || !pickup_address) {
+        req.flash('error_msg', 'Semua kolom wajib diisi.');
+        return res.redirect('/pickup');
+    }
+
+    try {
+        await prisma.pickup_requests.create({
+            data: {
+                user_id: req.session.user.id,
+                weight_estimate,
+                waste_types: Array.isArray(waste_types) ? waste_types.join(', ') : waste_types,
+                pickup_address
+            }
+        });
+        
+        req.flash('success_msg', 'Permintaan jemput sampah berhasil dikirim! Admin akan segera menuju lokasi.');
+        res.redirect('/pickup');
+    } catch (err) {
+        console.error('Pickup Request Error:', err);
+        req.flash('error_msg', 'Terjadi kesalahan sistem saat memproses permintaan Anda.');
+        res.redirect('/pickup');
+    }
+});
+
+app.get('/my-tree', isAuthenticated, async (req, res) => {
+    try {
+        const user = await prisma.users.findUnique({
+            where: { id: req.session.user.id }
+        });
+
+        const aggregate = await prisma.waste_logs.aggregate({
+            where: { user_id: user.id, status: 'verified' },
+            _sum: { total_weight: true }
+        });
+        const totalWeight = Number(aggregate._sum.total_weight || 0);
+
+        // Determine current stage and progress to next stage
+        let stage = 1;
+        let nextTarget = 10;
+        let prevTarget = 0;
+        let stageName = "Seed (Benih)";
+
+        if (totalWeight >= 500) { stage = 5; stageName = "Legendary Tree"; nextTarget = 1000; prevTarget = 500; }
+        else if (totalWeight >= 200) { stage = 4; stageName = "Big Tree"; nextTarget = 500; prevTarget = 200; }
+        else if (totalWeight >= 50) { stage = 3; stageName = "Young Tree"; nextTarget = 200; prevTarget = 50; }
+        else if (totalWeight >= 10) { stage = 2; stageName = "Sprout"; nextTarget = 50; prevTarget = 10; }
+
+        const stageProgress = Math.min(100, ((totalWeight - prevTarget) / (nextTarget - prevTarget)) * 100);
+
+        res.render('my_tree', {
+            title: 'My Eco-Garden | Eco-Pulse',
+            user,
+            tree: {
+                stage,
+                stageName,
+                totalWeight: totalWeight.toFixed(1),
+                progress: stageProgress.toFixed(1),
+                nextTarget,
+                image: `/images/avatars/stage${stage}.png`
+            }
+        });
+    } catch (err) {
+        console.error('My Tree Error:', err);
+        res.redirect('/dashboard');
     }
 });
 
@@ -555,6 +657,10 @@ app.post('/login', async (req, res) => {
 
         const valid = await verifyHashedPassword(password, user.password);
         if (!valid) throw new Error('Invalid email or password');
+
+        if (user.role === 'suspended') {
+            throw new Error('Akun Anda telah dinonaktifkan oleh Admin.');
+        }
 
         req.session.user = createSessionUser(user);
         res.redirect('/dashboard');
@@ -775,13 +881,18 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
                 newStreak = 1;
             }
 
+            // AI-Powered Automation: Auto-verify if AI analysis was used successfully
+            // (We trust the AI detection for instant gratification)
+            const isAiUsed = input_mode === 'ai' || (finalResults && finalResults.length > 0 && input_mode !== 'manual');
+            const logStatus = isAiUsed ? 'verified' : 'pending';
+
             await tx.waste_logs.create({
                 data: {
                     user_id: req.session.user.id,
                     photo_url,
                     total_points: totalPoints,
                     total_weight: parsedWeight,
-                    status: 'pending',
+                    status: logStatus,
                     ai_analysis: finalResults,
                     items: {
                         create: itemsData
@@ -789,24 +900,37 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
                 }
             });
 
+            // Update user: only increment points immediately if auto-verified by AI
             await tx.users.update({
                 where: { id: req.session.user.id },
                 data: {
-                    total_points: { increment: totalPoints },
+                    total_points: logStatus === 'verified' ? { increment: totalPoints } : undefined,
                     current_streak: newStreak,
                     last_log_date: new Date()
                 }
             });
 
-            // Notify all admins about new waste log
-            const admins = await tx.users.findMany({ where: { role: 'admin' } });
-            for (const admin of admins) {
+            if (logStatus === 'pending') {
+                // Notify admins about manual request
+                const admins = await tx.users.findMany({ where: { role: 'admin' } });
+                for (const admin of admins) {
+                    await tx.notifications.create({
+                        data: {
+                            user_id: admin.id,
+                            title: 'Verifikasi Manual Diperlukan 📥',
+                            message: `${user.username} menyetorkan ${parsedWeight}kg secara manual. Mohon tinjau.`,
+                            type: 'verification_request'
+                        }
+                    });
+                }
+            } else {
+                // Notify user about instant AI success
                 await tx.notifications.create({
                     data: {
-                        user_id: admin.id,
-                        title: 'Laporan Sampah Baru! 📥',
-                        message: `${user.username} baru saja menyetorkan ${parsedWeight}kg sampah. Segera verifikasi!`,
-                        type: 'verification_request'
+                        user_id: user.id,
+                        title: 'Terverifikasi Kilat oleh AI! ⚡',
+                        message: `AI kami telah mendeteksi setoran ${parsedWeight}kg Anda. ${totalPoints} poin telah ditambahkan!`,
+                        type: 'waste_verified'
                     }
                 });
             }
@@ -925,20 +1049,39 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
                 data: { status, verified_by: adminId }
             });
 
+            let isNowTrusted = false;
             if (pointsDelta !== 0) {
+                const userUpdateData = {
+                    total_points: { increment: pointsDelta }
+                };
+
+                // Increment reputation if verified manually
+                if (status === 'verified') {
+                    const user = await tx.users.findUnique({ where: { id: log.user_id } });
+                    const newCount = (user.verification_count || 0) + 1;
+                    userUpdateData.verification_count = newCount;
+                    
+                    if (!user.is_trusted && newCount >= 5) {
+                        userUpdateData.is_trusted = true;
+                        isNowTrusted = true;
+                    }
+                }
+
                 await tx.users.update({
                     where: { id: log.user_id },
-                    data: { total_points: { increment: pointsDelta } }
+                    data: userUpdateData
                 });
             }
 
             await tx.notifications.create({
                 data: {
                     user_id: log.user_id,
-                    title: status === 'verified' ? 'Setoran Diverifikasi! ✅' : 'Setoran Ditolak ❌',
-                    message: status === 'verified' 
-                        ? `Setoran Anda senilai ${log.total_weight}kg telah diverifikasi. +${log.total_points} poin!`
-                        : `Setoran Anda senilai ${log.total_weight}kg ditolak oleh admin.`,
+                    title: isNowTrusted ? 'Selamat! Anda Warga Terpercaya 🏆' : (status === 'verified' ? 'Setoran Diverifikasi! ✅' : 'Setoran Ditolak ❌'),
+                    message: isNowTrusted 
+                        ? 'Reputasi Anda luar biasa! Mulai sekarang setoran Anda akan otomatis terverifikasi.' 
+                        : (status === 'verified' 
+                            ? `Setoran Anda senilai ${log.total_weight}kg telah diverifikasi. +${log.total_points} poin!`
+                            : `Setoran Anda senilai ${log.total_weight}kg ditolak oleh admin.`),
                     type: 'verification'
                 }
             });
@@ -954,9 +1097,235 @@ app.post('/admin/verify/:id', isAdmin, async (req, res) => {
 });
 
 app.post('/admin/verify-bulk-ai', isAdmin, async (req, res) => {
-    // Basic bulk verify logic (simplified for now as AI scores are not per-item in this schema yet)
-    req.flash('error_msg', 'Bulk AI Verification requires further schema updates.');
-    res.redirect('/admin/dashboard');
+    console.log("--- BULK AI VERIFY TRIGGERED ---");
+    try {
+        // Find all pending logs
+        const pendingLogsRaw = await prisma.waste_logs.findMany({
+            where: {
+                status: 'pending'
+            },
+            include: { user: true }
+        });
+
+        // Filter logs that have ai_analysis in JS to avoid Prisma JSON null query issues
+        const pendingLogs = pendingLogsRaw.filter(log => log.ai_analysis !== null);
+
+        if (pendingLogs.length === 0) {
+            req.flash('error_msg', 'Tidak ada setoran pending yang memiliki analisis AI untuk diverifikasi.');
+            return res.redirect('/admin/dashboard');
+        }
+
+        let verifiedCount = 0;
+        
+        // Use a transaction with an increased timeout for safety
+        await prisma.$transaction(async (tx) => {
+            for (const log of pendingLogs) {
+                // Update log status
+                await tx.waste_logs.update({
+                    where: { id: log.id },
+                    data: { 
+                        status: 'verified',
+                        verified_by: req.session.user.id
+                    }
+                });
+
+                // Update user points
+                await tx.users.update({
+                    where: { id: log.user_id },
+                    data: { total_points: { increment: log.total_points } }
+                });
+
+                // Create notification for user
+                await tx.notifications.create({
+                    data: {
+                        user_id: log.user_id,
+                        title: 'Setoran Terverifikasi Otomatis! ✅',
+                        message: `Setoran Anda sebesar ${log.total_weight}kg telah disetujui secara otomatis oleh sistem AI.`,
+                        type: 'waste_verified'
+                    }
+                });
+
+                verifiedCount++;
+            }
+        }, {
+            maxWait: 5000, // default is 2000
+            timeout: 30000 // increased to 30s
+        });
+
+        req.flash('success_msg', `Sukses! ${verifiedCount} setoran sampah telah diverifikasi secara otomatis menggunakan AI.`);
+        res.redirect('/admin/dashboard');
+    } catch (err) {
+        console.error("Bulk AI Verify Error:", err);
+        req.flash('error_msg', 'Gagal melakukan verifikasi massal: ' + err.message);
+        res.redirect('/admin/dashboard');
+    }
+});
+
+app.get("/admin/settings", isAdmin, async (req, res) => {
+    try {
+        const configs = await prisma.point_configs.findMany({
+            orderBy: { waste_type: 'asc' }
+        });
+        res.render("admin_settings", { title: "Pengaturan Sistem | Eco-Pulse", configs, isAdminArea: true });
+    } catch (err) {
+        console.error("Admin Settings Error:", err);
+        req.flash("error_msg", "Gagal memuat pengaturan sistem.");
+        res.redirect("/admin/dashboard");
+    }
+});
+
+app.post("/admin/settings/update", isAdmin, async (req, res) => {
+    const { config_ids, points_per_kg, co2_factors, tree_factors } = req.body;
+    
+    try {
+        if (!config_ids || !Array.isArray(config_ids)) {
+            throw new Error("Data tidak valid.");
+        }
+
+        await prisma.$transaction(
+            config_ids.map((id, index) => {
+                return prisma.point_configs.update({
+                    where: { id: parseInt(id) },
+                    data: {
+                        points_per_kg: parseInt(points_per_kg[index]),
+                        co2_factor: parseFloat(co2_factors[index]),
+                        tree_factor: parseFloat(tree_factors[index])
+                    }
+                });
+            })
+        );
+
+        req.flash("success_msg", "Pengaturan sistem berhasil diperbarui!");
+        res.redirect("/admin/settings");
+    } catch (err) {
+        console.error("Update Settings Error:", err);
+        req.flash("error_msg", "Gagal menyimpan pengaturan: " + err.message);
+        res.redirect("/admin/settings");
+    }
+});
+
+app.get("/admin/pickups", isAdmin, async (req, res) => {
+    try {
+        const pickups = await prisma.pickup_requests.findMany({
+            include: { user: true },
+            orderBy: { created_at: 'asc' }
+        });
+        
+        // Group pickups by status for Kanban Board
+        const pending = pickups.filter(p => p.status === 'pending');
+        const onTheWay = pickups.filter(p => p.status === 'on_the_way');
+        const completed = pickups.filter(p => p.status === 'completed');
+
+        res.render("admin_pickups", { 
+            title: "Logistik Jemput Sampah | Eco-Pulse", 
+            pending, 
+            onTheWay, 
+            completed, 
+            isAdminArea: true 
+        });
+    } catch (err) {
+        console.error("Admin Pickups Error:", err);
+        req.flash("error_msg", "Gagal memuat data logistik.");
+        res.redirect("/admin/dashboard");
+    }
+});
+
+app.post("/admin/pickups/:id/status", isAdmin, async (req, res) => {
+    const id = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    if (!['pending', 'on_the_way', 'completed'].includes(status)) {
+        req.flash('error_msg', 'Status tidak valid.');
+        return res.redirect('/admin/pickups');
+    }
+
+    try {
+        const pickup = await prisma.pickup_requests.update({
+            where: { id },
+            data: { 
+                status,
+                pickup_date: status === 'completed' ? new Date() : null
+            }
+        });
+
+        // Send notification to the citizen
+        let notifTitle = 'Update Jemput Sampah 🚛';
+        let notifMsg = `Permintaan jemput sampah Anda telah diperbarui.`;
+        if (status === 'on_the_way') {
+            notifMsg = 'Admin sedang menuju ke lokasi Anda untuk menjemput sampah!';
+        } else if (status === 'completed') {
+            notifMsg = 'Penjemputan selesai! Terima kasih telah berkontribusi.';
+        }
+
+        await prisma.notifications.create({
+            data: {
+                user_id: pickup.user_id,
+                title: notifTitle,
+                message: notifMsg,
+                type: 'pickup_update'
+            }
+        });
+
+        req.flash("success_msg", `Status penjemputan diperbarui menjadi ${status}.`);
+        res.redirect("/admin/pickups");
+    } catch (err) {
+        console.error("Update Pickup Status Error:", err);
+        req.flash("error_msg", "Gagal memperbarui status jemputan.");
+        res.redirect("/admin/pickups");
+    }
+});
+
+app.get("/admin/users", isAdmin, async (req, res) => {
+    try {
+        const users = await prisma.users.findMany({
+            orderBy: { created_at: 'desc' },
+            include: {
+                _count: {
+                    select: { waste_logs: true }
+                }
+            }
+        });
+        res.render("admin_users", { title: "Manajemen User | Eco-Pulse", users, isAdminArea: true });
+    } catch (err) {
+        console.error("Admin Users Error:", err);
+        req.flash("error_msg", "Gagal memuat data user.");
+        res.redirect("/admin/dashboard");
+    }
+});
+
+app.post("/admin/users/:id/update", isAdmin, async (req, res) => {
+    const userId = parseInt(req.params.id);
+    const { action, points_adjustment, reason } = req.body;
+
+    try {
+        if (action === 'suspend') {
+            await prisma.users.update({
+                where: { id: userId },
+                data: { role: 'suspended' }
+            });
+            req.flash("success_msg", "Akun user berhasil dinonaktifkan (suspended).");
+        } else if (action === 'unsuspend') {
+            await prisma.users.update({
+                where: { id: userId },
+                data: { role: 'citizen' }
+            });
+            req.flash("success_msg", "Akun user berhasil diaktifkan kembali.");
+        } else if (action === 'adjust_points') {
+            const points = parseInt(points_adjustment) || 0;
+            if (points !== 0) {
+                await prisma.users.update({
+                    where: { id: userId },
+                    data: { total_points: { increment: points } }
+                });
+                req.flash("success_msg", `Berhasil menyesuaikan poin user sebanyak ${points}.`);
+            }
+        }
+        res.redirect("/admin/users");
+    } catch (err) {
+        console.error("Admin User Update Error:", err);
+        req.flash("error_msg", "Gagal memperbarui user.");
+        res.redirect("/admin/users");
+    }
 });
 
 app.get("/admin/rewards", isAdmin, async (req, res) => {

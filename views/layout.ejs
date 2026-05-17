@@ -100,12 +100,25 @@
 
             <!-- Desktop Navigation Menu -->
             <div class="hidden xl:flex items-center gap-1 bg-slate-100/50 p-1.5 rounded-full border border-slate-200/50">
-                <a href="/dashboard" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Dashboard</a>
-                <a href="/leaderboard" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Leaderboard</a>
-                <a href="/rewards" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Rewards</a>
-                <a href="/my-vouchers" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Vouchers</a>
-                <% if (user && user.role === 'admin') { %>
-                    <a href="/admin/dashboard" class="px-6 py-2.5 rounded-full text-sm font-black text-amber-700 bg-amber-100/50 hover:bg-amber-100 transition-all">Admin Panel</a>
+                <% if (!user) { %>
+                    <!-- Landing Page (Guest) -->
+                    <a href="/" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Beranda</a>
+                    <a href="#features" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Fitur</a>
+                <% } else if (user && user.role === 'admin') { %>
+                    <!-- Admin Panel -->
+                    <a href="/admin/dashboard" class="px-6 py-2.5 rounded-full text-sm font-black text-amber-700 bg-amber-100/50 hover:bg-amber-100 transition-all">Dashboard Admin</a>
+                    <a href="/admin/rewards" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Kelola Reward</a>
+                    <a href="/admin/users" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Warga</a>
+                    <a href="/admin/pickups" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Logistik</a>
+                    <a href="/admin/settings" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Sistem</a>
+                <% } else { %>
+                    <!-- Citizen User -->
+                    <a href="/dashboard" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Dashboard</a>
+                    <a href="/leaderboard" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Leaderboard</a>
+                    <a href="/rewards" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Rewards</a>
+                    <a href="/pickup" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Jemput</a>
+                    <a href="/my-vouchers" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all">Vouchers</a>
+                    <a href="/my-tree" class="px-6 py-2.5 rounded-full text-sm font-bold text-slate-600 hover:bg-white hover:text-emerald-700 hover:shadow-sm transition-all flex items-center gap-1.5">🌳 My Garden</a>
                 <% } %>
             </div>
 
@@ -205,22 +218,25 @@
             </div>
 
             <div class="space-y-2">
-                <a href="/dashboard" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">
-                    Dashboard
-                </a>
-                <a href="/leaderboard" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">
-                    Leaderboard
-                </a>
-                <a href="/rewards" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">
-                    Rewards
-                </a>
-                <a href="/my-vouchers" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">
-                    My Vouchers
-                </a>
-                <% if (user && user.role === 'admin') { %>
-                    <a href="/admin/dashboard" class="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition">
-                        Admin Panel
-                    </a>
+                <% if (!user) { %>
+                    <!-- Landing Page (Guest) -->
+                    <a href="/" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Beranda</a>
+                    <a href="#features" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Fitur</a>
+                <% } else if (user && user.role === 'admin') { %>
+                    <!-- Admin Panel -->
+                    <a href="/admin/dashboard" class="flex items-center gap-4 p-4 rounded-2xl bg-amber-50 text-amber-700 font-bold hover:bg-amber-100 transition">Dashboard Admin</a>
+                    <a href="/admin/rewards" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Kelola Reward</a>
+                    <a href="/admin/users" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Warga</a>
+                    <a href="/admin/pickups" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Logistik</a>
+                    <a href="/admin/settings" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Sistem</a>
+                <% } else { %>
+                    <!-- Citizen User -->
+                    <a href="/dashboard" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Dashboard</a>
+                    <a href="/leaderboard" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Leaderboard</a>
+                    <a href="/rewards" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Rewards</a>
+                    <a href="/pickup" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">Jemput Sampah</a>
+                    <a href="/my-vouchers" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">My Vouchers</a>
+                    <a href="/my-tree" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 text-slate-900 font-bold hover:bg-emerald-50 hover:text-emerald-700 transition">🌳 My Garden</a>
                 <% } %>
             </div>
 

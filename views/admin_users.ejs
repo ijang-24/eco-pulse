@@ -1,0 +1,160 @@
+<section class="space-y-8">
+    <div>
+        <h1 class="text-3xl font-black text-slate-950">Manajemen User</h1>
+        <p class="text-sm text-slate-500 font-medium">Pantau aktivitas warga, atur poin, dan kelola status akun.</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="flex gap-4">
+        <button onclick="filterUsers('all')" id="tab-all" class="px-6 py-2.5 rounded-2xl font-bold bg-slate-900 text-white shadow-md transition-all">Semua</button>
+        <button onclick="filterUsers('citizen')" id="tab-citizen" class="px-6 py-2.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Warga</button>
+        <button onclick="filterUsers('admin')" id="tab-admin" class="px-6 py-2.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Admin</button>
+    </div>
+
+    <!-- Table Users -->
+    <div class="overflow-hidden rounded-[2.5rem] border border-slate-100 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-xs uppercase tracking-widest text-slate-500">
+                    <tr>
+                        <th class="px-6 py-4 font-bold">User</th>
+                        <th class="px-6 py-4 font-bold text-center">Status</th>
+                        <th class="px-6 py-4 font-bold text-center">Poin</th>
+                        <th class="px-6 py-4 font-bold text-center">Riwayat Setor</th>
+                        <th class="px-6 py-4 font-bold text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    <% users.forEach(u => { %>
+                        <tr class="user-row transition hover:bg-slate-50/50" data-role="<%= u.role === 'admin' ? 'admin' : 'citizen' %>">
+                            <td class="px-6 py-4">
+                                <div class="font-black text-slate-900 text-base"><%= u.username %></div>
+                                <div class="text-xs font-semibold text-slate-400"><%= u.email %></div>
+                                <div class="text-xs text-slate-400 mt-1">Bergabung: <%= new Date(u.created_at).toLocaleDateString('id-ID') %></div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <% if (u.role === 'admin') { %>
+                                    <span class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-indigo-600">Admin</span>
+                                <% } else if (u.role === 'suspended') { %>
+                                    <span class="rounded-full bg-rose-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-rose-600">Suspended</span>
+                                <% } else { %>
+                                    <span class="rounded-full bg-emerald-100 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-emerald-600">Citizen</span>
+                                <% } %>
+                                
+                                <% if (u.is_trusted) { %>
+                                    <div class="mt-2 text-[10px] font-bold text-amber-500">🏆 Trusted</div>
+                                <% } %>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="font-black text-emerald-600 text-lg"><%= u.total_points %></span>
+                            </td>
+                            <td class="px-6 py-4 text-center font-bold text-slate-600">
+                                <%= u._count.waste_logs %> kali
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center justify-end gap-2">
+                                    <button onclick="openEditPointsModal(<%= u.id %>, '<%= u.username %>', <%= u.total_points %>)" class="rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-600 transition hover:bg-slate-200">
+                                        Edit Poin
+                                    </button>
+                                    
+                                    <% if (u.role !== 'admin') { %>
+                                        <form action="/admin/users/<%= u.id %>/update" method="POST" class="inline">
+                                            <% if (u.role === 'suspended') { %>
+                                                <input type="hidden" name="action" value="unsuspend">
+                                                <button type="button" onclick="confirmAction(this, 'Aktifkan kembali akun <%= u.username %>?', 'Ya, Aktifkan')" class="rounded-xl bg-emerald-50 px-4 py-2 text-xs font-bold text-emerald-600 transition hover:bg-emerald-100">
+                                                    Unsuspend
+                                                </button>
+                                            <% } else { %>
+                                                <input type="hidden" name="action" value="suspend">
+                                                <button type="button" onclick="confirmAction(this, 'Nonaktifkan akun <%= u.username %>?', 'Ya, Suspend')" class="rounded-xl bg-rose-50 px-4 py-2 text-xs font-bold text-rose-600 transition hover:bg-rose-100">
+                                                    Suspend
+                                                </button>
+                                            <% } %>
+                                        </form>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Edit Points -->
+    <div id="pointsModal" style="display:none;" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-6">
+        <div class="w-full max-w-sm rounded-[2.5rem] bg-white p-8 shadow-2xl">
+            <h2 class="text-xl font-black text-slate-900 mb-2">Penyesuaian Poin</h2>
+            <p id="modalUserName" class="text-sm font-semibold text-slate-500 mb-6">User: -</p>
+            
+            <form id="pointsForm" action="" method="POST" class="space-y-4">
+                <input type="hidden" name="action" value="adjust_points">
+                
+                <div class="space-y-1">
+                    <label class="text-xs font-bold uppercase tracking-widest text-slate-400 ml-1">Tambah / Kurangi Poin</label>
+                    <input type="number" name="points_adjustment" placeholder="Contoh: 100 atau -50" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-semibold outline-none focus:ring-2 focus:ring-emerald-500" required>
+                    <p class="text-xs font-semibold text-slate-400 ml-1 mt-1">Gunakan minus (-) untuk mengurangi.</p>
+                </div>
+
+                <div class="flex gap-4 pt-4">
+                    <button type="button" onclick="document.getElementById('pointsModal').style.display='none'" class="flex-1 rounded-2xl bg-slate-100 py-3 font-bold text-slate-600 transition hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="flex-1 rounded-2xl bg-emerald-600 py-3 font-bold text-white transition hover:bg-emerald-700">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openEditPointsModal(id, username, currentPoints) {
+            document.getElementById("pointsForm").action = "/admin/users/" + id + "/update";
+            document.getElementById("modalUserName").textContent = "User: " + username + " (Poin saat ini: " + currentPoints + ")";
+            document.getElementById("pointsModal").style.display = "flex";
+        }
+
+        function confirmAction(button, text, confirmBtnText) {
+            const form = button.closest('form');
+            Swal.fire({
+                title: 'Konfirmasi',
+                text: text,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: button.textContent.includes('Suspend') ? '#e11d48' : '#10b981',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: confirmBtnText,
+                cancelButtonText: 'Batal',
+                customClass: {
+                    popup: 'rounded-[2.5rem]',
+                    confirmButton: 'rounded-xl font-bold px-6 py-3',
+                    cancelButton: 'rounded-xl font-bold px-6 py-3'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        }
+
+        function filterUsers(role) {
+            // Update tab styles
+            const tabs = ['all', 'citizen', 'admin'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if (t === role) {
+                    btn.className = "px-6 py-2.5 rounded-2xl font-bold bg-slate-900 text-white shadow-md transition-all";
+                } else {
+                    btn.className = "px-6 py-2.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all";
+                }
+            });
+
+            // Filter rows
+            const rows = document.querySelectorAll('.user-row');
+            rows.forEach(row => {
+                if (role === 'all' || row.getAttribute('data-role') === role) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+    </script>
+</section>
