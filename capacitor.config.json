@@ -1,0 +1,10 @@
+{
+  "appId": "com.ecopulse.app",
+  "appName": "Eco Pulse",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://eco-pulse-blond.vercel.app/",
+    "cleartext": true
+  }
+}

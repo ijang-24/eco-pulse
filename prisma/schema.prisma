@@ -46,22 +46,27 @@ model notifications {
   is_read    Boolean  @default(false)
   type       String?  @db.VarChar(50)
   created_at DateTime @default(now()) @db.Timestamp(6)
-  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user       users    @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([is_read], map: "idx_notifications_is_read")
+  @@index([user_id], map: "idx_notifications_user_id")
 }
 
 model waste_logs {
-  id           Int           @id @default(autoincrement())
-  user_id      Int?
-  photo_url    String?       @db.VarChar(255)
-  status       String        @default("pending") @db.VarChar(20)
-  total_points Int           @default(0)
-  total_weight Decimal       @default(0) @db.Decimal(10, 2)
-  ai_analysis  Json?         @db.Json
-  verified_by  Int?
-  created_at   DateTime      @default(now()) @db.Timestamp(6)
-  user         users?        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  verifier     users?        @relation("AdminVerifier", fields: [verified_by], references: [id])
-  items        waste_items[]
+  id                Int           @id @default(autoincrement())
+  user_id           Int?
+  photo_url         String?       @db.VarChar(255)
+  status            String        @default("pending") @db.VarChar(20)
+  total_points      Int           @default(0)
+  total_weight      Decimal       @default(0) @db.Decimal(10, 2)
+  ai_analysis       Json?         @db.Json
+  verified_by       Int?
+  created_at        DateTime      @default(now()) @db.Timestamp(6)
+  ai_suggested_type String?       @db.VarChar(100)
+  ai_confidence     Decimal?      @db.Decimal(5, 2)
+  user              users?        @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  verifier          users?        @relation("AdminVerifier", fields: [verified_by], references: [id])
+  items             waste_items[]
 }
 
 model waste_items {
@@ -114,4 +119,12 @@ model pickup_requests {
   pickup_date     DateTime?
   created_at      DateTime  @default(now())
   user            users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model articles {
+  id         Int      @id @default(autoincrement())
+  title      String   @db.VarChar(255)
+  content    String
+  image_url  String?  @db.VarChar(255)
+  created_at DateTime @default(now())
 }

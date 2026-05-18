@@ -8,13 +8,18 @@
     "dev": "nodemon --no-deprecation app.js",
     "build": "prisma generate",
     "migrate": "node migrate.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@capacitor/android": "^8.3.4",
+    "@capacitor/cli": "^8.3.4",
+    "@capacitor/core": "^8.3.4",
     "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.22.0",
     "@supabase/ssr": "^0.10.3",
