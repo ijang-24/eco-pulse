@@ -188,13 +188,13 @@ app.get('/', async (req, res) => {
     try {
         const userCount = await prisma.users.count({ where: { role: 'citizen' } });
         res.render('index', { 
-            title: 'Eco-Pulse | Community Eco-Monitoring',
+            title: 'Eco-Pulse | Smart Waste Management Game',
             userCount: userCount || 0
         });
     } catch (err) {
         console.error('Home Error:', err);
         res.render('index', { 
-            title: 'Eco-Pulse | Community Eco-Monitoring',
+            title: 'Eco-Pulse | Smart Waste Management Game',
             userCount: 0
         });
     }
@@ -374,6 +374,36 @@ app.get('/dashboard', isAuthenticated, async (req, res) => {
         console.error('Dashboard Error:', err);
         req.flash('error_msg', 'Server error while loading dashboard');
         res.redirect('/');
+    }
+});
+
+// --- ECO-EDU ROUTES ---
+app.get('/edu', isAuthenticated, async (req, res) => {
+    try {
+        const articles = await prisma.articles.findMany({
+            orderBy: { created_at: 'desc' }
+        });
+        res.render('edu', { title: 'Pusat Edukasi | Eco-Pulse', articles });
+    } catch (err) {
+        console.error('Edu Page Error:', err);
+        req.flash('error_msg', 'Gagal memuat artikel.');
+        res.redirect('/dashboard');
+    }
+});
+
+app.get('/edu/:id', isAuthenticated, async (req, res) => {
+    try {
+        const article = await prisma.articles.findUnique({
+            where: { id: parseInt(req.params.id) }
+        });
+        if (!article) {
+            req.flash('error_msg', 'Artikel tidak ditemukan.');
+            return res.redirect('/edu');
+        }
+        res.render('edu_read', { title: article.title + ' | Eco-Pulse', article });
+    } catch (err) {
+        console.error('Edu Read Error:', err);
+        res.redirect('/edu');
     }
 });
 
@@ -853,9 +883,9 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
         let totalPoints = 0;
 
         const itemsData = finalResults.map(resItem => {
-            const config = configs.find(c => c.waste_type === resItem.type) || configs.find(c => c.waste_type === 'organic');
+            const config = configs.find(c => c.waste_type === resItem.type) || configs.find(c => c.waste_type === 'organic') || { waste_type: 'organic', points_per_kg: 5 };
             const itemWeight = (parsedWeight * (resItem.percentage / 100));
-            const itemPoints = Math.floor(itemWeight * config.points_per_kg);
+            const itemPoints = Math.floor(itemWeight * (config.points_per_kg || 5));
             totalPoints += itemPoints;
             return {
                 waste_type: config.waste_type,
@@ -1204,6 +1234,81 @@ app.post("/admin/settings/update", isAdmin, async (req, res) => {
     }
 });
 
+// --- ADMIN ECO-EDU ROUTES ---
+app.get("/admin/articles", isAdmin, async (req, res) => {
+    try {
+        const articles = await prisma.articles.findMany({
+            orderBy: { created_at: 'desc' }
+        });
+        res.render("admin_articles", { title: "Kelola Edukasi | Eco-Pulse", articles, isAdminArea: true });
+    } catch (err) {
+        console.error("Admin Articles Error:", err);
+        req.flash("error_msg", "Gagal memuat daftar artikel.");
+        res.redirect("/admin/dashboard");
+    }
+});
+
+app.post("/admin/articles/create", isAdmin, async (req, res) => {
+    const { title, content, image_url } = req.body;
+    try {
+        await prisma.articles.create({
+            data: { title, content, image_url }
+        });
+        req.flash("success_msg", "Artikel berhasil ditambahkan.");
+        res.redirect("/admin/articles");
+    } catch (err) {
+        console.error("Create Article Error:", err);
+        req.flash("error_msg", "Gagal menambah artikel.");
+        res.redirect("/admin/articles");
+    }
+});
+
+app.get("/admin/articles/:id/edit", isAdmin, async (req, res) => {
+    try {
+        const article = await prisma.articles.findUnique({
+            where: { id: parseInt(req.params.id) }
+        });
+        if (!article) {
+            req.flash("error_msg", "Artikel tidak ditemukan.");
+            return res.redirect("/admin/articles");
+        }
+        res.render("admin_article_edit", { title: "Edit Artikel | Eco-Pulse", article, isAdminArea: true });
+    } catch (err) {
+        console.error("Edit Article Page Error:", err);
+        res.redirect("/admin/articles");
+    }
+});
+
+app.post("/admin/articles/:id/edit", isAdmin, async (req, res) => {
+    const { title, content, image_url } = req.body;
+    try {
+        await prisma.articles.update({
+            where: { id: parseInt(req.params.id) },
+            data: { title, content, image_url }
+        });
+        req.flash("success_msg", "Artikel berhasil diperbarui.");
+        res.redirect("/admin/articles");
+    } catch (err) {
+        console.error("Update Article Error:", err);
+        req.flash("error_msg", "Gagal memperbarui artikel.");
+        res.redirect("/admin/articles");
+    }
+});
+
+app.post("/admin/articles/:id/delete", isAdmin, async (req, res) => {
+    try {
+        await prisma.articles.delete({
+            where: { id: parseInt(req.params.id) }
+        });
+        req.flash("success_msg", "Artikel berhasil dihapus.");
+        res.redirect("/admin/articles");
+    } catch (err) {
+        console.error("Delete Article Error:", err);
+        req.flash("error_msg", "Gagal menghapus artikel.");
+        res.redirect("/admin/articles");
+    }
+});
+
 app.get("/admin/pickups", isAdmin, async (req, res) => {
     try {
         const pickups = await prisma.pickup_requests.findMany({
@@ -1410,6 +1515,72 @@ app.post("/admin/delete/:id", isAdmin, async (req, res) => {
         console.error('Delete Error:', err);
         req.flash('error_msg', 'Failed to delete log');
         res.redirect('/admin/dashboard');
+    }
+});
+
+// --- Profile & Account Settings ---
+app.get('/profile', isAuthenticated, async (req, res) => {
+    try {
+        const currentUser = await prisma.users.findUnique({
+            where: { id: req.session.user.id }
+        });
+        res.render('profile', { title: 'Profil Saya | Eco-Pulse', user: currentUser });
+    } catch (err) {
+        console.error("Profile Error:", err);
+        req.flash('error_msg', 'Terjadi kesalahan saat memuat profil.');
+        res.redirect('/dashboard');
+    }
+});
+
+app.post('/profile', isAuthenticated, upload.single('avatar_file'), async (req, res) => {
+    const { username, email, address_rt, address_rw, old_password, new_password } = req.body;
+    try {
+        const currentUser = await prisma.users.findUnique({
+            where: { id: req.session.user.id }
+        });
+
+        const updateData = {
+            username,
+            email,
+            address_rt,
+            address_rw
+        };
+
+        // If a file was uploaded, set the avatar_url
+        if (req.file) {
+            updateData.avatar_url = `/uploads/${req.file.filename}`;
+        } else if (req.body.remove_avatar === 'true') {
+            updateData.avatar_url = null;
+        }
+
+        // Handle password change if provided
+        if (old_password && new_password) {
+            const isMatch = await bcrypt.compare(old_password, currentUser.password);
+            if (!isMatch) {
+                req.flash('error_msg', 'Password lama tidak sesuai.');
+                return res.redirect('/profile');
+            }
+            updateData.password = await bcrypt.hash(new_password, 10);
+        } else if (new_password && !old_password) {
+            req.flash('error_msg', 'Masukkan password lama untuk mengubah password.');
+            return res.redirect('/profile');
+        }
+
+        const updatedUser = await prisma.users.update({
+            where: { id: req.session.user.id },
+            data: updateData
+        });
+
+        // Update session data
+        req.session.user.username = updatedUser.username;
+        req.session.user.avatar_url = updatedUser.avatar_url;
+
+        req.flash('success_msg', 'Profil berhasil diperbarui.');
+        res.redirect('/profile');
+    } catch (err) {
+        console.error("Profile Update Error:", err);
+        req.flash('error_msg', 'Terjadi kesalahan saat memperbarui profil.');
+        res.redirect('/profile');
     }
 });
 

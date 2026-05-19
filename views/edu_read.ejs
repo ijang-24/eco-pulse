@@ -1,0 +1,44 @@
+<section class="max-w-4xl mx-auto pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Back Button -->
+    <a href="/edu" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-400 hover:text-emerald-600 transition-colors mb-8">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Kembali ke Edukasi
+    </a>
+
+    <!-- Article Header -->
+    <div class="mb-12">
+        <p class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-4"><%= new Date(article.created_at).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+        <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-slate-900 leading-tight mb-8" style="font-family: 'Playfair Display', serif;"><%= article.title %></h1>
+        
+        <div class="flex flex-col items-start gap-4 py-6 border-y border-slate-100 sm:flex-row sm:items-center">
+            <div class="h-12 w-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600 font-black text-xl">EP</div>
+            <div>
+                <p class="font-black text-slate-800 text-sm">Tim Redaksi Eco-Pulse</p>
+                <p class="text-xs font-bold text-slate-400">Pusat Pengetahuan Lingkungan</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Image -->
+    <% if (article.image_url) { %>
+        <div class="w-full h-[220px] sm:h-[300px] md:h-[500px] rounded-[2rem] sm:rounded-[3rem] overflow-hidden mb-16 shadow-2xl">
+            <img src="<%= article.image_url %>" class="w-full h-full object-cover">
+        </div>
+    <% } %>
+
+    <!-- Article Content -->
+    <div class="prose prose-slate prose-lg max-w-none font-medium leading-loose text-slate-700">
+        <!-- We use whitespace-pre-wrap to respect newlines from the textarea -->
+        <div class="whitespace-pre-wrap"><%= article.content %></div>
+    </div>
+
+    <!-- Share / Footer -->
+    <div class="mt-20 pt-8 border-t border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
+        <p class="text-sm font-bold text-slate-400">Semoga artikel ini bermanfaat untuk bumi kita.</p>
+        <div class="flex flex-wrap gap-4">
+            <button onclick="window.scrollTo({top: 0, behavior: 'smooth'})" class="px-6 py-3 rounded-2xl bg-slate-50 text-slate-600 text-xs font-black uppercase tracking-widest hover:bg-slate-100 transition-colors">
+                ↑ Kembali ke Atas
+            </button>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,35 @@
+<section class="max-w-4xl mx-auto space-y-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900">Edit Artikel</h1>
+            <p class="text-sm font-bold text-slate-500 mt-1">Perbarui konten artikel edukasi Anda.</p>
+        </div>
+        <a href="/admin/articles" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-colors">
+            Kembali
+        </a>
+    </div>
+
+    <div class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl border border-slate-100">
+        <form action="/admin/articles/<%= article.id %>/edit" method="POST" class="space-y-8">
+            <div>
+                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Judul Artikel</label>
+                <input type="text" name="title" value="<%= article.title %>" class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+            </div>
+            
+            <div>
+                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">URL Gambar Sampul (Opsional)</label>
+                <input type="url" name="image_url" value="<%= article.image_url || '' %>" placeholder="https://..." class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+
+            <div>
+                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Konten Artikel</label>
+                <textarea name="content" rows="15" class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-medium text-slate-700 focus:ring-2 focus:ring-emerald-500 outline-none leading-relaxed" required><%= article.content %></textarea>
+                <p class="text-[10px] font-bold text-slate-400 mt-2 ml-2">*Mendukung teks biasa (Plain text).</p>
+            </div>
+
+            <button type="submit" class="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-emerald-200 hover:bg-emerald-500 transition-colors hover:-translate-y-1">
+                Simpan Perubahan
+            </button>
+        </form>
+    </div>
+</section>

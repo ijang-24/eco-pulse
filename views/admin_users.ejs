@@ -5,7 +5,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-4">
+    <div class="flex flex-wrap gap-2 sm:gap-4">
         <button onclick="filterUsers('all')" id="tab-all" class="px-6 py-2.5 rounded-2xl font-bold bg-slate-900 text-white shadow-md transition-all">Semua</button>
         <button onclick="filterUsers('citizen')" id="tab-citizen" class="px-6 py-2.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Warga</button>
         <button onclick="filterUsers('admin')" id="tab-admin" class="px-6 py-2.5 rounded-2xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Admin</button>
@@ -96,9 +96,9 @@
                     <p class="text-xs font-semibold text-slate-400 ml-1 mt-1">Gunakan minus (-) untuk mengurangi.</p>
                 </div>
 
-                <div class="flex gap-4 pt-4">
-                    <button type="button" onclick="document.getElementById('pointsModal').style.display='none'" class="flex-1 rounded-2xl bg-slate-100 py-3 font-bold text-slate-600 transition hover:bg-slate-200">Batal</button>
-                    <button type="submit" class="flex-1 rounded-2xl bg-emerald-600 py-3 font-bold text-white transition hover:bg-emerald-700">Simpan</button>
+                <div class="flex flex-col sm:flex-row gap-3 pt-4">
+                    <button type="button" onclick="document.getElementById('pointsModal').style.display='none'" class="w-full flex-1 rounded-2xl bg-slate-100 py-3 font-bold text-slate-600 transition hover:bg-slate-200">Batal</button>
+                    <button type="submit" class="w-full flex-1 rounded-2xl bg-emerald-600 py-3 font-bold text-white transition hover:bg-emerald-700">Simpan</button>
                 </div>
             </form>
         </div>

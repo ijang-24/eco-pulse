@@ -1,0 +1,50 @@
+<section class="max-w-6xl mx-auto space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div class="text-center max-w-2xl mx-auto">
+        <span class="inline-block px-4 py-1 bg-emerald-100 text-emerald-700 font-black text-[10px] uppercase tracking-widest rounded-full mb-4">Eco-Edu Pusat Pengetahuan</span>
+        <h1 class="text-4xl md:text-5xl font-black text-slate-900 leading-tight">Belajar Menjaga <br><span class="text-emerald-600">Bumi Kita.</span></h1>
+        <p class="text-sm font-bold text-slate-500 mt-4 leading-relaxed">Baca artikel-artikel pilihan kami untuk memperluas wawasan Anda tentang pengelolaan lingkungan, daur ulang, dan gaya hidup berkelanjutan.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <% if (articles && articles.length > 0) { %>
+            <% articles.forEach((a, index) => { %>
+                <a href="/edu/<%= a.id %>" class="group bg-white rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 overflow-hidden flex flex-col h-full relative">
+                    <!-- Featured tag for newest article -->
+                    <% if (index === 0) { %>
+                        <div class="absolute top-4 right-4 z-10 bg-rose-500 text-white text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full shadow-lg">Terbaru</div>
+                    <% } %>
+
+                    <div class="h-56 bg-slate-100 overflow-hidden relative">
+                        <% if (a.image_url) { %>
+                            <img src="<%= a.image_url %>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700">
+                        <% } else { %>
+                            <div class="absolute inset-0 bg-gradient-to-br from-emerald-400 to-lime-300 group-hover:scale-105 transition-transform duration-700 opacity-80"></div>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <svg class="w-16 h-16 text-white/50" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" /></svg>
+                            </div>
+                        <% } %>
+                    </div>
+                    <div class="p-8 flex-1 flex flex-col">
+                        <p class="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-3"><%= new Date(a.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                        <h3 class="font-black text-slate-800 text-xl leading-tight mb-4 group-hover:text-emerald-600 transition-colors"><%= a.title %></h3>
+                        
+                        <!-- Snippet text -->
+                        <p class="text-sm font-medium text-slate-500 line-clamp-3 mb-6"><%= a.content %></p>
+
+                        <div class="mt-auto pt-6 border-t border-slate-100 flex items-center text-xs font-black text-slate-400 group-hover:text-emerald-600 transition-colors uppercase tracking-widest">
+                            Baca Artikel →
+                        </div>
+                    </div>
+                </a>
+            <% }) %>
+        <% } else { %>
+            <div class="col-span-full py-20 text-center">
+                <div class="inline-flex h-20 w-20 rounded-full bg-slate-50 text-slate-300 items-center justify-center mb-4">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                </div>
+                <h3 class="text-xl font-black text-slate-800 mb-2">Belum ada artikel</h3>
+                <p class="text-sm text-slate-500 font-bold">Admin belum mempublikasikan artikel edukasi apa pun.</p>
+            </div>
+        <% } %>
+    </div>
+</section>

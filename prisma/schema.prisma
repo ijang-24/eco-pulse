@@ -22,6 +22,7 @@ model users {
   nik                String?         @unique @db.VarChar(20)
   kk_number          String?         @db.VarChar(20)
   kk_photo_url       String?         @db.VarChar(255)
+  avatar_url         String?         @db.VarChar(255)
   address_rt         String?         @db.VarChar(10)
   address_rw         String?         @db.VarChar(10)
   role               String          @default("citizen") @db.VarChar(20)
@@ -124,7 +125,7 @@ model pickup_requests {
 model articles {
   id         Int      @id @default(autoincrement())
   title      String   @db.VarChar(255)
-  content    String
+  content    String   @db.Text
   image_url  String?  @db.VarChar(255)
   created_at DateTime @default(now())
 }

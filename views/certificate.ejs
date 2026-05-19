@@ -63,7 +63,7 @@
             </p>
 
             <!-- Impact Stats Section -->
-            <div class="grid grid-cols-2 gap-8 max-w-lg mx-auto mb-16">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 max-w-lg mx-auto mb-16">
                 <div class="p-6 rounded-3xl bg-emerald-50 border border-emerald-100">
                     <p class="text-[10px] font-black uppercase tracking-widest text-emerald-600 mb-2">Emisi CO2 Dikurangi</p>
                     <p class="text-2xl font-black text-emerald-800"><%= impact.co2 %> kg</p>
@@ -95,14 +95,14 @@
     </div>
 
     <!-- Actions -->
-    <div class="fixed bottom-6 flex gap-4 no-print">
-        <button onclick="window.print()" class="flex items-center gap-2 rounded-2xl bg-slate-900 px-8 py-4 text-sm font-bold text-white shadow-xl hover:bg-slate-800 transition active:scale-95">
+    <div class="fixed bottom-4 left-1/2 z-50 w-[calc(100%-2rem)] -translate-x-1/2 flex flex-col gap-3 no-print sm:bottom-6 sm:w-auto sm:flex-row sm:gap-4">
+        <button onclick="window.print()" class="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-6 py-4 text-sm font-bold text-white shadow-xl hover:bg-slate-800 transition active:scale-95 sm:px-8">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
             </svg>
             Cetak Sertifikat
         </button>
-        <a href="/dashboard" class="flex items-center gap-2 rounded-2xl bg-white px-8 py-4 text-sm font-bold text-slate-600 shadow-xl hover:bg-slate-50 transition active:scale-95">
+        <a href="/dashboard" class="flex items-center justify-center gap-2 rounded-2xl bg-white px-6 py-4 text-sm font-bold text-slate-600 shadow-xl hover:bg-slate-50 transition active:scale-95 sm:px-8">
             Kembali ke Dashboard
         </a>
     </div>

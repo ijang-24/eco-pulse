@@ -1,0 +1,146 @@
+<section class="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+    <div>
+        <h1 class="text-3xl font-black text-slate-900">Profil Saya</h1>
+        <p class="text-sm font-bold text-slate-500 mt-1">Kelola data diri dan keamanan akun Anda.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Avatar Section -->
+        <div class="md:col-span-1">
+            <div class="bg-white rounded-[2.5rem] p-8 shadow-xl border border-slate-100 flex flex-col items-center text-center">
+                <div class="relative w-32 h-32 rounded-full mb-6 p-1 bg-gradient-to-tr from-emerald-400 to-lime-300 shadow-xl shadow-emerald-200/50 group cursor-pointer transition-transform hover:scale-105" onclick="document.getElementById('avatarInput').click()">
+                    <div class="w-full h-full rounded-full bg-white flex items-center justify-center overflow-hidden border-4 border-white relative">
+                        <img id="avatarPreview" src="<%= user.avatar_url ? user.avatar_url : '#' %>" alt="Avatar" class="w-full h-full object-cover <%= user.avatar_url ? '' : 'hidden' %>">
+                        <% if (!user.avatar_url) { %>
+                            <span id="avatarInitials" class="text-4xl font-black text-emerald-600"><%= user.username.charAt(0).toUpperCase() %></span>
+                        <% } %>
+                        <!-- Hover Overlay -->
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <% if (user.avatar_url) { %>
+                    <button type="button" id="removeAvatarBtn" onclick="removeAvatarPreview()" title="Hapus Foto" class="p-2.5 mb-4 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600 transition-colors shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                <% } else { %>
+                    <button type="button" id="removeAvatarBtn" onclick="removeAvatarPreview()" title="Hapus Foto" class="hidden p-2.5 mb-4 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 hover:text-rose-600 transition-colors shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                <% } %>
+                <h3 class="text-xl font-black text-slate-800"><%= user.username %></h3>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-widest mt-1"><%= user.role %></p>
+                
+                <div class="w-full border-t border-slate-100 mt-6 pt-6">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Total Kontribusi Poin</p>
+                    <p class="text-3xl font-black text-emerald-600"><%= user.total_points %></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Form -->
+        <div class="md:col-span-2">
+            <div class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl border border-slate-100">
+                <form action="/profile" method="POST" enctype="multipart/form-data" class="space-y-8">
+                    <!-- Personal Info -->
+                    <div class="space-y-6">
+                        <h2 class="text-lg font-black text-slate-800 border-b border-slate-100 pb-2">Informasi Dasar</h2>
+                        
+                        <div>
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Nama Pengguna (Username)</label>
+                            <input type="text" name="username" value="<%= user.username %>" class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Email</label>
+                            <input type="email" name="email" value="<%= user.email %>" class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                        </div>
+
+                        <!-- Hidden File Input -->
+                        <input type="file" id="avatarInput" name="avatar_file" accept="image/*" class="hidden" onchange="previewAvatar(event)">
+                        <input type="hidden" id="removeAvatarFlag" name="remove_avatar" value="false">
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">RT</label>
+                                <input type="text" name="address_rt" value="<%= user.address_rt || '' %>" placeholder="001" class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">RW</label>
+                                <input type="text" name="address_rw" value="<%= user.address_rw || '' %>" placeholder="001" class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security -->
+                    <div class="space-y-6 pt-6">
+                        <h2 class="text-lg font-black text-slate-800 border-b border-slate-100 pb-2">Keamanan (Ganti Password)</h2>
+                        <p class="text-xs font-bold text-slate-400">Kosongkan jika Anda tidak ingin mengganti password.</p>
+
+                        <div>
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Password Lama</label>
+                            <input type="password" name="old_password" class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Password Baru</label>
+                            <input type="password" name="new_password" class="w-full mt-2 px-6 py-4 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="w-full py-5 bg-slate-900 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-emerald-600 transition-colors hover:-translate-y-1">
+                            Simpan Perubahan Profil
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+function previewAvatar(event) {
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const output = document.getElementById('avatarPreview');
+            output.src = e.target.result;
+            output.classList.remove('hidden');
+            
+            const initials = document.getElementById('avatarInitials');
+            if (initials) initials.classList.add('hidden');
+
+            document.getElementById('removeAvatarBtn').classList.remove('hidden');
+            document.getElementById('removeAvatarFlag').value = 'false';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeAvatarPreview() {
+    const output = document.getElementById('avatarPreview');
+    output.src = '#';
+    output.classList.add('hidden');
+    
+    let initials = document.getElementById('avatarInitials');
+    if (!initials) {
+        // If initials span doesn't exist, create it
+        const container = output.parentElement;
+        initials = document.createElement('span');
+        initials.id = 'avatarInitials';
+        initials.className = 'text-4xl font-black text-emerald-600';
+        initials.innerText = '<%= user.username.charAt(0).toUpperCase() %>';
+        // Insert before hover overlay
+        container.insertBefore(initials, container.lastElementChild);
+    } else {
+        initials.classList.remove('hidden');
+    }
+
+    document.getElementById('avatarInput').value = '';
+    document.getElementById('removeAvatarBtn').classList.add('hidden');
+    document.getElementById('removeAvatarFlag').value = 'true';
+}
+</script>
