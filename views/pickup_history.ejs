@@ -1,0 +1,92 @@
+<section class="max-w-6xl mx-auto space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Header/Breadcrumb -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100/80 pb-6">
+        <div class="space-y-1.5">
+            <a href="/pickup" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400 hover:text-emerald-700 transition group mb-1">
+                <span class="group-hover:-translate-x-1 transition-transform">←</span> Kembali ke Jemput Sampah
+            </a>
+            <h1 class="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">Riwayat Jemput Selesai 🏆</h1>
+            <p class="text-sm font-semibold text-slate-500">Daftar penjemputan sampah Anda yang telah berhasil diverifikasi oleh tim Eco-Pulse.</p>
+        </div>
+
+        <div class="flex items-center gap-2 self-start sm:self-center">
+            <span class="text-xs bg-emerald-100/80 text-emerald-800 font-black px-4 py-2 rounded-full uppercase tracking-wider">
+                Total: <%= pastPickups.length %> Penjemputan
+            </span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <% if (pastPickups && pastPickups.length > 0) { %>
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <% pastPickups.forEach(p => { %>
+                <div class="group relative rounded-[2rem] bg-white border border-slate-100 p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden">
+                    <!-- Accent color bar -->
+                    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-400"></div>
+                    
+                    <div class="space-y-4">
+                        <!-- Top status line -->
+                        <div class="flex justify-between items-center">
+                            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-emerald-700">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                Selesai
+                            </span>
+                            <span class="text-xs font-bold text-slate-400">
+                                <%= new Date(p.pickup_date || p.updated_at || p.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) %>
+                            </span>
+                        </div>
+
+                        <!-- ID & Weight -->
+                        <div class="space-y-1">
+                            <h3 class="text-lg font-black text-slate-800">Jemputan #<%= p.id %></h3>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-xs font-black text-slate-700 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                    ⚖️ <%= p.weight_estimate %>
+                                </span>
+                                <span class="text-[10px] font-bold text-slate-400 truncate max-w-[150px]">
+                                    <%= p.waste_types %>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Address -->
+                        <div class="space-y-1 text-xs">
+                            <span class="font-black text-slate-400 uppercase tracking-widest text-[9px]">Lokasi Penjemputan</span>
+                            <p class="text-slate-600 font-semibold line-clamp-2 leading-relaxed"><%= p.pickup_address %></p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom CTA -->
+                    <div class="border-t border-slate-50 pt-4 mt-5 flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-slate-400">
+                            Diajukan: <%= new Date(p.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) %>
+                        </span>
+                        <a href="/pickup/<%= p.id %>" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 px-4 py-2 text-xs font-black transition-all">
+                            Lihat Rincian ➔
+                        </a>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <!-- Empty State -->
+        <div class="rounded-[2.5rem] bg-white border border-slate-100 p-12 text-center max-w-2xl mx-auto shadow-xl shadow-slate-100/50 space-y-6">
+            <div class="w-20 h-20 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-4xl shadow-inner animate-bounce duration-[2000ms]">
+                🌱
+            </div>
+            
+            <div class="space-y-2">
+                <h3 class="text-xl font-extrabold text-slate-800">Belum Ada Riwayat Selesai</h3>
+                <p class="text-sm font-semibold text-slate-400 max-w-md mx-auto leading-relaxed">
+                    Setiap penjemputan sampah yang telah selesai diproses oleh admin akan tersimpan dengan rapi di halaman ini. Ayo ajukan penjemputan pertamamu!
+                </p>
+            </div>
+
+            <div>
+                <a href="/pickup" class="inline-flex items-center gap-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-3 text-xs font-black shadow-lg shadow-emerald-200 transition-all hover:scale-[1.02] active:scale-95">
+                    Mulai Jemput Sampah ➔
+                </a>
+            </div>
+        </div>
+    <% } %>
+</section>

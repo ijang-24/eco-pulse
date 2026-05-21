@@ -1,41 +1,48 @@
-<div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 hover:shadow-md transition-shadow group">
-    <div class="flex justify-between items-start mb-3">
-        <div>
-            <h4 class="font-black text-slate-800 text-sm"><%= p.user.username %></h4>
-            <p class="text-[10px] font-bold text-slate-400 mt-0.5"><%= new Date(p.created_at).toLocaleDateString('id-ID', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' }) %></p>
+<div class="bg-white rounded-2xl p-3.5 border border-slate-100 hover:shadow-md transition-shadow group">
+    <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2 min-w-0">
+            <div class="h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 flex-shrink-0">
+                <%= p.user.username.charAt(0).toUpperCase() %>
+            </div>
+            <div class="min-w-0">
+                <p class="text-xs font-black text-slate-800 truncate"><%= p.user.username %></p>
+                <p class="text-[9px] text-slate-400 font-medium">#<%= p.id %> · <%= new Date(p.created_at).toLocaleDateString('id-ID', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) %></p>
+            </div>
         </div>
-        <div class="text-[10px] font-black uppercase tracking-widest px-2 py-1 bg-slate-50 text-slate-500 rounded-md">
+        <span class="text-[9px] font-black text-slate-500 bg-slate-50 px-2 py-0.5 rounded-md flex-shrink-0">
             <%= p.weight_estimate %>
-        </div>
+        </span>
     </div>
     
-    <div class="text-xs text-slate-600 mb-4 bg-slate-50 p-2 rounded-xl">
-        <span class="font-bold text-slate-800"><%= p.waste_types %></span><br>
-        <span class="opacity-80 mt-1 block"><%= p.pickup_address %></span>
+    <div class="text-[11px] text-slate-500 mb-3 bg-slate-50 p-2 rounded-xl leading-relaxed">
+        <span class="font-bold text-slate-700"><%= p.waste_types %></span>
+        <span class="block text-[10px] mt-0.5 truncate"><%= p.pickup_address %></span>
     </div>
 
     <!-- Actions -->
-    <div class="flex gap-2 border-t border-slate-50 pt-3">
+    <div class="flex gap-1.5">
         <% if (p.status === 'pending') { %>
             <form action="/admin/pickups/<%= p.id %>/status" method="POST" class="flex-1">
                 <input type="hidden" name="status" value="on_the_way">
-                <button type="submit" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-600 text-xs font-black py-2 rounded-xl transition-colors">
-                    Terima & OTW
+                <button type="submit" class="w-full bg-blue-50 hover:bg-blue-100 text-blue-600 text-[11px] font-bold py-1.5 rounded-xl transition">
+                    Terima & OTW →
                 </button>
             </form>
         <% } else if (p.status === 'on_the_way') { %>
             <form action="/admin/pickups/<%= p.id %>/status" method="POST" class="flex-1">
                 <input type="hidden" name="status" value="completed">
-                <button type="submit" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-xs font-black py-2 rounded-xl transition-colors">
-                    Selesaikan
+                <button type="submit" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-600 text-[11px] font-bold py-1.5 rounded-xl transition">
+                    Selesaikan ✓
                 </button>
             </form>
-            <form action="/admin/pickups/<%= p.id %>/status" method="POST" class="flex-none">
+            <form action="/admin/pickups/<%= p.id %>/status" method="POST">
                 <input type="hidden" name="status" value="pending">
-                <button type="submit" title="Kembalikan ke Menunggu" class="w-full bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 text-xs font-black px-3 py-2 rounded-xl transition-colors">
+                <button type="submit" title="Kembalikan" class="bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-500 text-[11px] font-bold px-2.5 py-1.5 rounded-xl transition">
                     ↩
                 </button>
             </form>
+        <% } else { %>
+            <span class="w-full text-center text-[10px] font-bold text-emerald-500 py-1.5">✓ Selesai</span>
         <% } %>
     </div>
 </div>

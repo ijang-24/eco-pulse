@@ -143,6 +143,11 @@ const isAuthenticated = (req, res, next) => {
     res.redirect('/login');
 };
 
+const isGuest = (req, res, next) => {
+    if (!req.session.user) return next();
+    res.redirect('/dashboard');
+};
+
 const isAdmin = (req, res, next) => {
     if (req.session.user && req.session.user.role === 'admin') return next();
     req.flash('error_msg', 'Access Denied: Admin Only');
@@ -413,16 +418,31 @@ app.get('/pickup', isAuthenticated, async (req, res) => {
             where: { user_id: req.session.user.id, status: { not: 'completed' } },
             orderBy: { created_at: 'desc' }
         });
-        const pastPickups = await prisma.pickup_requests.findMany({
-            where: { user_id: req.session.user.id, status: 'completed' },
-            orderBy: { created_at: 'desc' },
-            take: 5
+
+        // Get all pending logs for the user
+        const pendingLogs = await prisma.waste_logs.findMany({
+            where: { user_id: req.session.user.id, status: 'pending' },
+            include: { items: true },
+            orderBy: { created_at: 'desc' }
         });
+
+        // Filter out logs that are already linked in active pickups
+        const linkedLogIds = new Set();
+        activePickups.forEach(p => {
+            if (p.linked_log_ids) {
+                p.linked_log_ids.split(',').forEach(idStr => {
+                    const id = parseInt(idStr.trim(), 10);
+                    if (!isNaN(id)) linkedLogIds.add(id);
+                });
+            }
+        });
+
+        const availablePendingLogs = pendingLogs.filter(log => !linkedLogIds.has(log.id));
 
         res.render('pickup', {
             title: 'Jemput Sampah | Eco-Pulse',
             activePickups,
-            pastPickups
+            pendingLogs: availablePendingLogs
         });
     } catch (err) {
         console.error('Pickup Page Error:', err);
@@ -432,28 +452,138 @@ app.get('/pickup', isAuthenticated, async (req, res) => {
 });
 
 app.post('/pickup/request', isAuthenticated, async (req, res) => {
-    const { weight_estimate, waste_types, pickup_address } = req.body;
+    const { selected_logs, pickup_address } = req.body;
     
-    if (!weight_estimate || !waste_types || !pickup_address) {
-        req.flash('error_msg', 'Semua kolom wajib diisi.');
+    if (!pickup_address) {
+        req.flash('error_msg', 'Alamat penjemputan wajib diisi.');
+        return res.redirect('/pickup');
+    }
+
+    if (!selected_logs) {
+        req.flash('error_msg', 'Silakan pilih minimal 1 setoran sampah pending untuk dijemput.');
+        return res.redirect('/pickup');
+    }
+
+    // Process selected logs
+    let logIds = [];
+    if (Array.isArray(selected_logs)) {
+        logIds = selected_logs.map(id => parseInt(id, 10)).filter(id => !isNaN(id));
+    } else {
+        const parsed = parseInt(selected_logs, 10);
+        if (!isNaN(parsed)) logIds.push(parsed);
+    }
+
+    if (logIds.length === 0) {
+        req.flash('error_msg', 'Setoran sampah yang dipilih tidak valid.');
         return res.redirect('/pickup');
     }
 
     try {
+        // Fetch selected logs to verify ownership and pending status
+        const logs = await prisma.waste_logs.findMany({
+            where: {
+                id: { in: logIds },
+                user_id: req.session.user.id,
+                status: 'pending'
+            },
+            include: { items: true }
+        });
+
+        if (logs.length === 0) {
+            req.flash('error_msg', 'Setoran sampah pending tidak ditemukan atau sudah diproses.');
+            return res.redirect('/pickup');
+        }
+
+        // Calculate total weight and collect unique waste types
+        let totalWeight = 0;
+        const wasteTypesSet = new Set();
+
+        logs.forEach(log => {
+            totalWeight += Number(log.total_weight || 0);
+            log.items.forEach(item => {
+                wasteTypesSet.add(item.waste_type);
+            });
+        });
+
+        const weight_estimate = `${totalWeight.toFixed(2)} kg`;
+        const waste_types = wasteTypesSet.size > 0 ? Array.from(wasteTypesSet).join(', ') : 'Sampah Campur';
+
         await prisma.pickup_requests.create({
             data: {
                 user_id: req.session.user.id,
                 weight_estimate,
-                waste_types: Array.isArray(waste_types) ? waste_types.join(', ') : waste_types,
-                pickup_address
+                waste_types,
+                pickup_address,
+                linked_log_ids: logIds.join(','),
+                status: 'pending'
             }
         });
         
-        req.flash('success_msg', 'Permintaan jemput sampah berhasil dikirim! Admin akan segera menuju lokasi.');
+        req.flash('success_msg', 'Permintaan jemput sampah berhasil dibuat! Admin akan segera menjadwalkan.');
         res.redirect('/pickup');
     } catch (err) {
         console.error('Pickup Request Error:', err);
         req.flash('error_msg', 'Terjadi kesalahan sistem saat memproses permintaan Anda.');
+        res.redirect('/pickup');
+    }
+});
+
+app.get('/pickup/history', isAuthenticated, async (req, res) => {
+    try {
+        const pastPickups = await prisma.pickup_requests.findMany({
+            where: { user_id: req.session.user.id, status: 'completed' },
+            orderBy: { created_at: 'desc' }
+        });
+
+        res.render('pickup_history', {
+            title: 'Riwayat Jemput Sampah | Eco-Pulse',
+            pastPickups
+        });
+    } catch (err) {
+        console.error('Pickup History Error:', err);
+        req.flash('error_msg', 'Gagal memuat riwayat penjemputan.');
+        res.redirect('/pickup');
+    }
+});
+
+app.get('/pickup/:id', isAuthenticated, async (req, res) => {
+    const id = parseEntityId(req.params.id);
+    if (!id) {
+        req.flash('error_msg', 'Detail penjemputan tidak ditemukan.');
+        return res.redirect('/pickup');
+    }
+
+    try {
+        const pickup = await prisma.pickup_requests.findUnique({
+            where: { id },
+            include: { user: true }
+        });
+
+        if (!pickup || (pickup.user_id !== req.session.user.id && req.session.user.role !== 'admin')) {
+            req.flash('error_msg', 'Anda tidak memiliki akses ke halaman ini.');
+            return res.redirect('/pickup');
+        }
+
+        // Fetch linked logs
+        let linkedLogs = [];
+        if (pickup.linked_log_ids) {
+            const logIds = pickup.linked_log_ids.split(',').map(idStr => parseInt(idStr.trim(), 10)).filter(idNum => !isNaN(idNum));
+            if (logIds.length > 0) {
+                linkedLogs = await prisma.waste_logs.findMany({
+                    where: { id: { in: logIds } },
+                    include: { items: true }
+                });
+            }
+        }
+
+        res.render('pickup_detail', {
+            title: `Detail Penjemputan #${pickup.id} | Eco-Pulse`,
+            pickup,
+            linkedLogs
+        });
+    } catch (err) {
+        console.error('Pickup Detail Error:', err);
+        req.flash('error_msg', 'Gagal memuat detail penjemputan.');
         res.redirect('/pickup');
     }
 });
@@ -673,11 +803,11 @@ app.post('/rewards/redeem/:id', isAuthenticated, async (req, res) => {
     }
 });
 
-app.get('/login', (req, res) => {
+app.get('/login', isGuest, (req, res) => {
     res.render('login', { title: 'Login | Eco-Pulse' });
 });
 
-app.post('/login', async (req, res) => {
+app.post('/login', isGuest, async (req, res) => {
     const email = normalizeText(req.body.email).toLowerCase();
     const password = req.body.password;
 
@@ -700,11 +830,11 @@ app.post('/login', async (req, res) => {
     }
 });
 
-app.get('/register', (req, res) => {
+app.get('/register', isGuest, (req, res) => {
     res.render('register', { title: 'Register | Eco-Pulse' });
 });
 
-app.post('/register', upload.single('kk_photo'), async (req, res) => {
+app.post('/register', isGuest, upload.single('kk_photo'), async (req, res) => {
     const username = normalizeText(req.body.username);
     const email = normalizeText(req.body.email).toLowerCase();
     const password = req.body.password || '';
@@ -883,12 +1013,12 @@ app.post("/waste/track", isAuthenticated, upload.single("photo"), async (req, re
         let totalPoints = 0;
 
         const itemsData = finalResults.map(resItem => {
-            const config = configs.find(c => c.waste_type === resItem.type) || configs.find(c => c.waste_type === 'organic') || { waste_type: 'organic', points_per_kg: 5 };
+            const config = configs.find(c => c.waste_type === resItem.type) || configs.find(c => c.waste_type === 'organic') || { points_per_kg: 5 };
             const itemWeight = (parsedWeight * (resItem.percentage / 100));
             const itemPoints = Math.floor(itemWeight * (config.points_per_kg || 5));
             totalPoints += itemPoints;
             return {
-                waste_type: config.waste_type,
+                waste_type: resItem.type,   // ← always use the original selected/detected type, not config fallback
                 weight: itemWeight,
                 points_earned: itemPoints
             };
@@ -1248,6 +1378,10 @@ app.get("/admin/articles", isAdmin, async (req, res) => {
     }
 });
 
+app.get("/admin/articles/new", isAdmin, (req, res) => {
+    res.render("admin_article_new", { title: "Tulis Artikel Baru | Eco-Pulse", isAdminArea: true });
+});
+
 app.post("/admin/articles/create", isAdmin, async (req, res) => {
     const { title, content, image_url } = req.body;
     try {
@@ -1311,22 +1445,53 @@ app.post("/admin/articles/:id/delete", isAdmin, async (req, res) => {
 
 app.get("/admin/pickups", isAdmin, async (req, res) => {
     try {
-        const pickups = await prisma.pickup_requests.findMany({
-            include: { user: true },
-            orderBy: { created_at: 'asc' }
-        });
-        
-        // Group pickups by status for Kanban Board
-        const pending = pickups.filter(p => p.status === 'pending');
-        const onTheWay = pickups.filter(p => p.status === 'on_the_way');
-        const completed = pickups.filter(p => p.status === 'completed');
+        const search      = (req.query.search || '').trim();
+        const tabFilter   = req.query.tab || 'pending'; // 'pending', 'on_the_way', 'completed'
 
-        res.render("admin_pickups", { 
-            title: "Logistik Jemput Sampah | Eco-Pulse", 
-            pending, 
-            onTheWay, 
-            completed, 
-            isAdminArea: true 
+        // Always get counts for all statuses (for tab badges)
+        const [totalPending, totalOnTheWay, totalCompleted] = await Promise.all([
+            prisma.pickup_requests.count({ where: { status: 'pending' } }),
+            prisma.pickup_requests.count({ where: { status: 'on_the_way' } }),
+            prisma.pickup_requests.count({ where: { status: 'completed' } }),
+        ]);
+
+        // Build search condition
+        const searchWhere = search ? {
+            OR: [
+                { pickup_address: { contains: search, mode: 'insensitive' } },
+                { waste_types:    { contains: search, mode: 'insensitive' } },
+                { user: { username: { contains: search, mode: 'insensitive' } } },
+                { user: { email:    { contains: search, mode: 'insensitive' } } },
+            ]
+        } : {};
+
+        // Fetch only the active tab's data
+        const statusMap = { pending: 'pending', on_the_way: 'on_the_way', completed: 'completed' };
+        const activeStatus = statusMap[tabFilter] || 'pending';
+
+        const rows = await prisma.pickup_requests.findMany({
+            where: { status: activeStatus, ...searchWhere },
+            include: { user: true },
+            orderBy: { created_at: activeStatus === 'completed' ? 'desc' : 'asc' },
+            take: activeStatus === 'completed' ? 30 : undefined,
+        });
+
+        // Pass grouped arrays for backward compat (view checks activeTab)
+        const pending   = activeStatus === 'pending'    ? rows : [];
+        const onTheWay  = activeStatus === 'on_the_way' ? rows : [];
+        const completed = activeStatus === 'completed'  ? rows : [];
+
+        res.render("admin_pickups", {
+            title: "Logistik Jemput Sampah | Eco-Pulse",
+            pending,
+            onTheWay,
+            completed,
+            totalPending,
+            totalOnTheWay,
+            totalCompleted,
+            tabFilter,
+            search,
+            isAdminArea: true
         });
     } catch (err) {
         console.error("Admin Pickups Error:", err);
@@ -1335,9 +1500,12 @@ app.get("/admin/pickups", isAdmin, async (req, res) => {
     }
 });
 
+
+
 app.post("/admin/pickups/:id/status", isAdmin, async (req, res) => {
     const id = parseInt(req.params.id);
     const { status } = req.body;
+    const adminId = req.session.user.id;
     
     if (!['pending', 'on_the_way', 'completed'].includes(status)) {
         req.flash('error_msg', 'Status tidak valid.');
@@ -1345,7 +1513,17 @@ app.post("/admin/pickups/:id/status", isAdmin, async (req, res) => {
     }
 
     try {
-        const pickup = await prisma.pickup_requests.update({
+        const pickup = await prisma.pickup_requests.findUnique({
+            where: { id }
+        });
+
+        if (!pickup) {
+            req.flash('error_msg', 'Penjemputan tidak ditemukan.');
+            return res.redirect('/admin/pickups');
+        }
+
+        // Update the pickup status
+        await prisma.pickup_requests.update({
             where: { id },
             data: { 
                 status,
@@ -1371,8 +1549,74 @@ app.post("/admin/pickups/:id/status", isAdmin, async (req, res) => {
             }
         });
 
+        // Automation: If marked as completed, verify all linked pending waste logs!
+        if (status === 'completed' && pickup.linked_log_ids) {
+            const logIds = pickup.linked_log_ids.split(',').map(idStr => parseInt(idStr.trim(), 10)).filter(idNum => !isNaN(idNum));
+            
+            if (logIds.length > 0) {
+                // Find all pending logs that are linked to this pickup
+                const pendingLogs = await prisma.waste_logs.findMany({
+                    where: {
+                        id: { in: logIds },
+                        status: 'pending'
+                    }
+                });
+
+                // Run verification in a transaction for each log to ensure robust points allocation
+                for (const log of pendingLogs) {
+                    try {
+                        await prisma.$transaction(async (tx) => {
+                            const pointsDelta = log.total_points || 0;
+
+                            // Update waste log status to verified
+                            await tx.waste_logs.update({
+                                where: { id: log.id },
+                                data: { status: 'verified', verified_by: adminId }
+                            });
+
+                            let isNowTrusted = false;
+                            if (pointsDelta !== 0) {
+                                const userUpdateData = {
+                                    total_points: { increment: pointsDelta }
+                                };
+
+                                const user = await tx.users.findUnique({ where: { id: log.user_id } });
+                                const newCount = (user.verification_count || 0) + 1;
+                                userUpdateData.verification_count = newCount;
+                                
+                                if (!user.is_trusted && newCount >= 5) {
+                                    userUpdateData.is_trusted = true;
+                                    isNowTrusted = true;
+                                }
+
+                                await tx.users.update({
+                                    where: { id: log.user_id },
+                                    data: userUpdateData
+                                });
+                            }
+
+                            // Notification for verified waste log
+                            await tx.notifications.create({
+                                data: {
+                                    user_id: log.user_id,
+                                    title: isNowTrusted ? 'Selamat! Anda Warga Terpercaya 🏆' : 'Setoran Diverifikasi! ✅',
+                                    message: isNowTrusted 
+                                        ? 'Reputasi Anda luar biasa! Mulai sekarang setoran Anda akan otomatis terverifikasi.' 
+                                        : `Setoran Anda senilai ${log.total_weight}kg (dari penjemputan) telah diverifikasi. +${log.total_points} poin!`,
+                                    type: 'verification'
+                                }
+                            });
+                        });
+                    } catch (innerErr) {
+                        console.error(`Failed to auto-verify log #${log.id}:`, innerErr);
+                    }
+                }
+            }
+        }
+
         req.flash("success_msg", `Status penjemputan diperbarui menjadi ${status}.`);
-        res.redirect("/admin/pickups");
+        const redirectTab = req.body.redirect_tab || 'pending';
+        res.redirect(`/admin/pickups?tab=${redirectTab}`);
     } catch (err) {
         console.error("Update Pickup Status Error:", err);
         req.flash("error_msg", "Gagal memperbarui status jemputan.");

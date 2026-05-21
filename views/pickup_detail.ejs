@@ -1,0 +1,172 @@
+<section class="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <!-- Back Button -->
+    <div>
+        <a href="/pickup" class="inline-flex items-center gap-2 text-xs font-black uppercase tracking-wider text-slate-400 hover:text-emerald-700 transition">
+            <span>←</span> Kembali ke Jemput Sampah
+        </a>
+    </div>
+
+    <!-- Main Detail Card -->
+    <div class="rounded-[2.5rem] bg-white border border-slate-100 p-8 shadow-xl shadow-slate-100/50 space-y-8">
+        
+        <!-- Header Info -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100 pb-6">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Logistik & Penjadwalan</p>
+                <h1 class="text-3xl font-extrabold text-slate-900 mt-1">Detail Penjemputan #<%= pickup.id %></h1>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-black uppercase tracking-wider 
+                    <%= pickup.status === 'completed' ? 'bg-emerald-50 text-emerald-700' : (pickup.status === 'on_the_way' ? 'bg-indigo-50 text-indigo-700' : 'bg-amber-50 text-amber-700') %>">
+                    <span class="w-2 h-2 rounded-full 
+                        <%= pickup.status === 'completed' ? 'bg-emerald-600' : (pickup.status === 'on_the_way' ? 'bg-indigo-600' : 'bg-amber-500') %>"></span>
+                    <%= pickup.status === 'completed' ? 'Selesai' : (pickup.status === 'on_the_way' ? 'Dalam Perjalanan' : 'Menunggu Admin') %>
+                </span>
+            </div>
+        </div>
+
+        <!-- Progress Timeline -->
+        <div class="rounded-3xl bg-slate-50 border border-slate-100/60 p-6 md:p-8 text-center max-w-3xl mx-auto">
+            <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-6">Status Alur Armada</h3>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 max-w-2xl mx-auto relative">
+                <!-- Timeline Connecting Line -->
+                <div class="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-1 bg-slate-200 -translate-y-1/2 z-0"></div>
+                <div class="hidden md:block absolute top-1/2 left-[10%] h-1 bg-emerald-500 transition-all duration-1000 -translate-y-1/2 z-0" 
+                     style="width: <%= pickup.status === 'on_the_way' ? '40%' : (pickup.status === 'completed' ? '80%' : '0%') %>"></div>
+
+                <!-- Step 1: Pending -->
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg <%= pickup.status === 'pending' || pickup.status === 'on_the_way' || pickup.status === 'completed' ? 'bg-emerald-600 text-white shadow-emerald-200/50' : 'bg-white text-slate-400' %>">
+                        🕒
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-700">Menunggu</span>
+                    <span class="text-[8px] font-bold text-slate-400"><%= new Date(pickup.created_at).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' }) %></span>
+                </div>
+
+                <!-- Step 2: On The Way -->
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg <%= pickup.status === 'on_the_way' || pickup.status === 'completed' ? 'bg-indigo-600 text-white shadow-indigo-200/50' : 'bg-white text-slate-400' %>">
+                        🚛
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-700">Dalam Perjalanan</span>
+                    <span class="text-[8px] font-bold text-slate-400">
+                        <%= pickup.status === 'on_the_way' || pickup.status === 'completed' ? 'Aktif' : '-' %>
+                    </span>
+                </div>
+
+                <!-- Step 3: Completed -->
+                <div class="relative z-10 flex flex-col items-center gap-2">
+                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg <%= pickup.status === 'completed' ? 'bg-emerald-600 text-white shadow-emerald-200/50' : 'bg-white text-slate-400' %>">
+                        ✅
+                    </div>
+                    <span class="text-xs font-black uppercase tracking-widest text-slate-700">Selesai</span>
+                    <span class="text-[8px] font-bold text-slate-400">
+                        <%= pickup.pickup_date ? new Date(pickup.pickup_date).toLocaleDateString('id-ID', { hour: '2-digit', minute: '2-digit' }) : '-' %>
+                    </span>
+                </div>
+            </div>
+            
+            <p class="mt-8 text-xs font-bold text-slate-600 bg-white py-3 px-6 rounded-2xl inline-block shadow-sm">
+                <% if (pickup.status === 'pending') { %>
+                    📌 Admin sedang meninjau rute penjemputan. Pastikan sampah siap di alamat penjemputan!
+                <% } else if (pickup.status === 'on_the_way') { %>
+                    🚛 Petugas sedang meluncur ke lokasi Anda. Harap aktifkan nomor kontak Anda!
+                <% } else { %>
+                    🎉 Penjemputan selesai! Terima kasih telah berkontribusi menjaga kelestarian lingkungan.
+                <% } %>
+            </p>
+        </div>
+
+        <!-- Details Grid Info -->
+        <div class="grid md:grid-cols-2 gap-6 border-t border-b border-slate-100 py-8">
+            <div class="space-y-4">
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">Alamat Lengkap & Patokan</h4>
+                    <p class="text-sm font-bold text-slate-800 mt-1 leading-relaxed"><%= pickup.pickup_address %></p>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">Pemohon (Warga)</h4>
+                    <p class="text-sm font-bold text-slate-800 mt-1"><%= pickup.user.username %> (<%= pickup.user.email %>)</p>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">Estimasi Total Berat</h4>
+                        <p class="text-sm font-black text-slate-900 mt-1 bg-slate-50 px-3 py-1.5 rounded-xl inline-block"><%= pickup.weight_estimate %></p>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">Tanggal Pengajuan</h4>
+                        <p class="text-sm font-bold text-slate-800 mt-1"><%= new Date(pickup.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }) %></p>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-xs font-black uppercase tracking-widest text-slate-400">Jenis Sampah Gabungan</h4>
+                    <p class="text-sm font-bold text-emerald-700 mt-1"><%= pickup.waste_types %></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Associated Waste Logs (Setoran Terhubung) -->
+        <div class="space-y-4">
+            <div class="flex items-center gap-2">
+                <h3 class="text-lg font-black text-slate-900">Setoran Sampah Terhubung</h3>
+                <span class="text-xs bg-slate-100 px-2 py-0.5 rounded-full font-bold text-slate-500"><%= linkedLogs.length %></span>
+            </div>
+
+            <% if (linkedLogs && linkedLogs.length > 0) { %>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <% linkedLogs.forEach(log => { %>
+                        <div class="rounded-3xl border border-slate-100 bg-slate-50/50 p-5 space-y-4 shadow-sm hover:shadow-md transition">
+                            
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-extrabold text-slate-800 text-sm">Setoran #<%= log.id %></h4>
+                                    <p class="text-[10px] font-bold text-slate-400">
+                                        <%= new Date(log.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) %>
+                                    </p>
+                                </div>
+                                <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-black uppercase tracking-wider 
+                                    <%= log.status === 'verified' ? 'bg-emerald-50 text-emerald-700' : (log.status === 'rejected' ? 'bg-rose-50 text-rose-700' : 'bg-amber-50 text-amber-700') %>">
+                                    <%= log.status === 'verified' ? 'Diverifikasi' : (log.status === 'rejected' ? 'Ditolak' : 'Proses Review') %>
+                                </span>
+                            </div>
+
+                            <% if (log.photo_url) { %>
+                                <div class="relative h-32 rounded-2xl overflow-hidden shadow-inner bg-slate-200">
+                                    <img src="<%= log.photo_url %>" alt="Foto Sampah" class="w-full h-full object-cover">
+                                </div>
+                            <% } %>
+
+                            <!-- Item List Breakdown -->
+                            <div class="bg-white p-3 rounded-2xl border border-slate-100/60 space-y-2">
+                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Rincian Sampah</p>
+                                <div class="space-y-1">
+                                    <% log.items.forEach(item => { %>
+                                        <div class="flex justify-between items-center text-xs">
+                                            <span class="font-bold text-slate-600"><%= item.waste_type %></span>
+                                            <span class="font-black text-slate-800"><%= item.weight %> kg <span class="text-[10px] text-emerald-600 font-bold ml-1">(+<%= item.points_earned %> Poin)</span></span>
+                                        </div>
+                                    <% }) %>
+                                </div>
+                                
+                                <div class="flex justify-between items-center border-t border-slate-100 pt-2 text-xs font-black">
+                                    <span class="text-slate-800">Total</span>
+                                    <span class="text-slate-900"><%= log.total_weight %> kg <span class="text-[10px] text-emerald-700 ml-1">(+<%= log.total_points %> Poin)</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                </div>
+            <% } else { %>
+                <div class="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-xs font-bold text-slate-400">
+                    Tidak ada log sampah terhubung yang ditemukan.
+                </div>
+            <% } %>
+        </div>
+
+    </div>
+</section>

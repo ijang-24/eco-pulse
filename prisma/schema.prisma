@@ -119,6 +119,7 @@ model pickup_requests {
   status          String    @default("pending") @db.VarChar(20)
   pickup_date     DateTime?
   created_at      DateTime  @default(now())
+  linked_log_ids  String?   @db.Text
   user            users     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 

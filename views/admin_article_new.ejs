@@ -1,8 +1,8 @@
 <section class="max-w-4xl mx-auto space-y-8">
     <div class="flex justify-between items-center">
         <div>
-            <h1 class="text-3xl font-black text-slate-900">Edit Artikel</h1>
-            <p class="text-sm font-bold text-slate-500 mt-1">Perbarui konten artikel edukasi Anda.</p>
+            <h1 class="text-3xl font-black text-slate-900">Tulis Artikel Baru</h1>
+            <p class="text-sm font-bold text-slate-500 mt-1">Publikasikan konten edukasi untuk warga.</p>
         </div>
         <a href="/admin/articles" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl font-black hover:bg-slate-200 transition-colors">
             Kembali
@@ -10,29 +10,30 @@
     </div>
 
     <div class="bg-white rounded-[2.5rem] p-8 md:p-12 shadow-xl border border-slate-100">
-        <form action="/admin/articles/<%= article.id %>/edit" method="POST" class="space-y-8" id="articleForm">
+        <form action="/admin/articles/create" method="POST" class="space-y-8" id="articleForm">
             <div>
                 <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Judul Artikel</label>
-                <input type="text" name="title" value="<%= article.title %>" class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
+                <input type="text" name="title" class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none" required>
             </div>
             
             <div>
                 <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">URL Gambar Sampul (Opsional)</label>
-                <input type="url" name="image_url" value="<%= article.image_url || '' %>" placeholder="https://..." class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
+                <input type="url" name="image_url" placeholder="https://..." class="w-full mt-2 px-6 py-5 rounded-2xl bg-slate-50 border-none font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 outline-none">
             </div>
 
             <div>
                 <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Konten Artikel</label>
+                <!-- Hidden textarea to store HTML for submission -->
                 <textarea name="content" id="contentInput" class="hidden" required></textarea>
+                <!-- Quill Editor Container -->
                 <div class="mt-2 rounded-2xl bg-slate-50 overflow-hidden border-none focus-within:ring-2 focus-within:ring-emerald-500 transition-all">
-                    <!-- We output existing HTML into the Quill container -->
-                    <div id="quillEditor" class="min-h-[300px] border-none text-slate-700 font-medium leading-relaxed bg-white/50 text-base"><%- article.content %></div>
+                    <div id="quillEditor" class="min-h-[300px] border-none text-slate-700 font-medium leading-relaxed bg-white/50 text-base"></div>
                 </div>
                 <p class="text-[10px] font-bold text-slate-400 mt-2 ml-2">*Mendukung teks berformat (Bold, Italic, Header, dll).</p>
             </div>
 
             <button type="submit" class="w-full py-5 bg-emerald-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-emerald-200 hover:bg-emerald-500 transition-colors hover:-translate-y-1">
-                Simpan Perubahan
+                Publikasikan Artikel
             </button>
         </form>
     </div>
@@ -43,7 +44,7 @@
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 
 <style>
-    /* Customizing Quill Toolbar */
+    /* Customizing Quill Toolbar to match Eco-Pulse theme */
     .ql-toolbar.ql-snow {
         border: none !important;
         border-bottom: 2px solid #f1f5f9 !important;
@@ -63,6 +64,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Quill Editor
         var quill = new Quill('#quillEditor', {
             theme: 'snow',
             placeholder: 'Mulai menulis artikel edukatif Anda di sini...',
@@ -78,12 +80,15 @@
             }
         });
 
+        // Sync Quill HTML content to the hidden textarea on form submit
         var form = document.getElementById('articleForm');
         var contentInput = document.getElementById('contentInput');
 
         form.addEventListener('submit', function(e) {
+            // Get HTML content from Quill
             var htmlContent = quill.root.innerHTML;
             
+            // Check if it's practically empty
             if (quill.getText().trim().length === 0 && !htmlContent.includes('<img')) {
                 e.preventDefault();
                 Swal.fire({
@@ -94,6 +99,7 @@
                 });
                 return false;
             }
+
             contentInput.value = htmlContent;
         });
     });

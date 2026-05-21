@@ -1,147 +1,275 @@
-<section class="max-w-4xl mx-auto space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-    <div class="text-center">
-        <h1 class="text-3xl font-black text-slate-900">Jemput Sampah 🚛</h1>
-        <p class="text-sm font-bold text-slate-500 mt-2">Minta admin untuk menjemput sampah langsung ke rumah Anda.</p>
+<style>
+    .log-card-selected { background: #f0fdf4; border-color: #10b981 !important; }
+    .preview-enter { animation: pvIn 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes pvIn { from { opacity:0; transform:scale(0.94) translateY(6px); } to { opacity:1; transform:scale(1) translateY(0); } }
+    .scroll-slim::-webkit-scrollbar { width: 3px; }
+    .scroll-slim::-webkit-scrollbar-thumb { background: #d1fae5; border-radius: 99px; }
+    .dot-pulse { animation: dp 2s ease-in-out infinite; }
+    @keyframes dp { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+</style>
+
+<section class="max-w-5xl mx-auto px-4 sm:px-0 pb-16 space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-400">
+
+    <!-- Header -->
+    <div class="text-center pt-2 space-y-1.5">
+        <h1 class="text-2xl font-black text-slate-900 tracking-tight">Jemput Sampah 🚛</h1>
+        <p class="text-sm text-slate-400 font-medium">Pilih setoran → isi alamat → ajukan</p>
     </div>
 
-    <% if (activePickups && activePickups.length > 0) { %>
-        <!-- Active Pickup Status -->
-        <div class="rounded-[2.5rem] bg-emerald-50 border border-emerald-100 p-8 shadow-lg text-center">
-            <h2 class="text-xl font-black text-slate-900 mb-6">Status Jemputan Aktif</h2>
-            <% const current = activePickups[0]; %>
-            <div class="flex flex-col md:flex-row items-center justify-between gap-6 max-w-2xl mx-auto relative">
-                
-                <!-- Timeline Line -->
-                <div class="hidden md:block absolute top-1/2 left-[10%] right-[10%] h-1 bg-slate-200 -translate-y-1/2 z-0"></div>
-                <div class="hidden md:block absolute top-1/2 left-[10%] h-1 bg-emerald-500 transition-all duration-1000 -translate-y-1/2 z-0" 
-                     style="width: <%= current.status === 'on_the_way' ? '40%' : (current.status === 'completed' ? '80%' : '0%') %>"></div>
+    <!-- Two column -->
+    <div class="grid lg:grid-cols-[1fr_380px] gap-5 items-start">
 
-                <!-- Step 1: Pending -->
-                <div class="relative z-10 flex flex-col items-center gap-2">
-                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg <%= current.status === 'pending' || current.status === 'on_the_way' || current.status === 'completed' ? 'bg-emerald-600 text-white shadow-emerald-200' : 'bg-white text-slate-400' %>">
-                        🕒
+        <!-- ═══ LEFT: Form ═══ -->
+        <div class="rounded-3xl bg-white border border-slate-100 shadow-sm overflow-hidden">
+
+            <% if (pendingLogs && pendingLogs.length > 0) { %>
+                <form action="/pickup/request" method="POST">
+                    
+                    <!-- Section: Pilih Setoran -->
+                    <div class="px-6 pt-6 pb-4 border-b border-slate-50 space-y-3">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-400">① Pilih Setoran Pending</p>
+                        <div class="space-y-2 max-h-[280px] overflow-y-auto scroll-slim pr-1">
+                            <% pendingLogs.forEach(log => { %>
+                                <label class="pending-log-card relative flex items-center gap-3 p-3.5 rounded-2xl border-2 border-slate-100 bg-slate-50/50 hover:border-emerald-200 hover:bg-emerald-50/30 transition-all duration-200 cursor-pointer">
+                                    <input type="checkbox" name="selected_logs" value="<%= log.id %>" class="hidden" onchange="updateStats()">
+                                    
+                                    <!-- Checkbox -->
+                                    <div class="custom-checkbox flex-shrink-0 h-5 w-5 rounded-lg border-2 border-slate-200 bg-white flex items-center justify-center transition-all">
+                                        <svg class="custom-svg h-3 w-3 text-white opacity-0 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                                        </svg>
+                                    </div>
+
+                                    <!-- Info -->
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-bold text-slate-800 truncate">
+                                            Setoran #<%= log.id %>
+                                            <span class="font-normal text-slate-400 text-xs ml-1">
+                                                · <%= log.items.map(i => i.waste_type).join(', ') %>
+                                            </span>
+                                        </p>
+                                        <p class="text-[11px] text-slate-400 mt-0.5">
+                                            <%= new Date(log.created_at).toLocaleDateString('id-ID', {day:'numeric',month:'short',year:'numeric'}) %>
+                                        </p>
+                                    </div>
+
+                                    <!-- Weight & Points -->
+                                    <div class="text-right flex-shrink-0">
+                                        <p class="text-sm font-black text-slate-700" data-weight="<%= log.total_weight %>"><%= log.total_weight %> kg</p>
+                                        <p class="text-[10px] text-emerald-600 font-bold">+<%= log.total_points %> poin</p>
+                                    </div>
+
+                                    <div class="highlight-border absolute inset-0 rounded-2xl border-2 border-emerald-500 opacity-0 pointer-events-none transition-all"></div>
+                                </label>
+                            <% }) %>
+                        </div>
                     </div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-700">Menunggu</span>
+
+                    <!-- Summary strip (hidden by default) -->
+                    <div id="summary-bar" class="hidden px-6 py-3 bg-emerald-50/80 border-b border-emerald-100">
+                        <div class="flex items-center justify-between">
+                            <p class="text-xs font-bold text-emerald-700">
+                                <span id="sel-count" class="text-base font-black">0</span> setoran dipilih
+                            </p>
+                            <p class="text-xs font-bold text-slate-600">
+                                Total: <span id="sel-weight" class="font-black text-slate-800">0.00</span> kg
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Preview area (hidden by default) -->
+                    <div id="preview-wrap" class="hidden px-6 pt-4 pb-2 space-y-2">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-400">Pratinjau Dipilih</p>
+                        <div id="preview-list" class="grid sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto scroll-slim pr-1"></div>
+                    </div>
+
+                    <!-- Section: Alamat -->
+                    <div class="px-6 pt-4 pb-6 space-y-2.5">
+                        <p class="text-[11px] font-black uppercase tracking-widest text-slate-400">② Alamat Penjemputan</p>
+                        <textarea name="pickup_address" rows="3"
+                            placeholder="Jl. Merdeka No. 45, RT 02/RW 03 — rumah cat hijau, patokan warung Madura."
+                            class="w-full rounded-2xl border-2 border-slate-100 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-300 outline-none focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-50 transition-all resize-none"
+                            required></textarea>
+
+                        <button type="submit"
+                            class="w-full rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm py-3.5 shadow-md shadow-emerald-200/60 hover:shadow-emerald-200 hover:scale-[1.005] active:scale-[0.99] transition-all">
+                            Ajukan Penjemputan ➔
+                        </button>
+                    </div>
+                </form>
+
+            <% } else { %>
+                <div class="p-12 text-center space-y-4">
+                    <div class="text-4xl">🍃</div>
+                    <div>
+                        <p class="font-bold text-slate-700 text-sm">Tidak ada setoran pending</p>
+                        <p class="text-xs text-slate-400 mt-1">Catat sampah baru terlebih dahulu.</p>
+                    </div>
+                    <a href="/waste/track" class="inline-flex items-center gap-1.5 rounded-full bg-emerald-600 px-5 py-2.5 text-xs font-black text-white shadow-md hover:bg-emerald-700 transition">
+                        Catat Sampah ➔
+                    </a>
+                </div>
+            <% } %>
+        </div>
+
+        <!-- ═══ RIGHT: Sidebar ═══ -->
+        <div class="space-y-4">
+
+            <!-- Active Pickups -->
+            <div class="rounded-3xl bg-white border border-slate-100 shadow-sm overflow-hidden">
+                <div class="px-5 py-4 border-b border-slate-50 flex items-center justify-between">
+                    <p class="text-sm font-black text-slate-800">Jemputan Aktif</p>
+                    <span class="text-[10px] font-black text-amber-600 bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-100">
+                        <%= activePickups.length %>
+                    </span>
                 </div>
 
-                <!-- Step 2: On The Way -->
-                <div class="relative z-10 flex flex-col items-center gap-2">
-                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg <%= current.status === 'on_the_way' || current.status === 'completed' ? 'bg-emerald-600 text-white shadow-emerald-200' : 'bg-white text-slate-400' %>">
-                        🚛
+                <% if (activePickups && activePickups.length > 0) { %>
+                    <div class="divide-y divide-slate-50 max-h-[320px] overflow-y-auto scroll-slim">
+                        <% activePickups.forEach(p => { %>
+                            <a href="/pickup/<%= p.id %>" class="flex items-center gap-3 px-5 py-4 hover:bg-slate-50/70 transition group">
+                                <!-- Status dot -->
+                                <span class="flex-shrink-0 h-2.5 w-2.5 rounded-full dot-pulse
+                                    <%= p.status === 'on_the_way' ? 'bg-blue-400' : 'bg-amber-400' %>">
+                                </span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-slate-800 truncate">Jemputan #<%= p.id %></p>
+                                    <p class="text-[11px] text-slate-400 truncate mt-0.5"><%= p.pickup_address %></p>
+                                </div>
+                                <div class="flex-shrink-0 text-right">
+                                    <p class="text-xs font-bold text-slate-500"><%= p.weight_estimate %></p>
+                                    <svg class="h-3.5 w-3.5 text-slate-300 group-hover:text-emerald-500 transition ml-auto mt-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                            </a>
+                        <% }) %>
                     </div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-700">Menuju Lokasi</span>
-                </div>
-
-                <!-- Step 3: Completed -->
-                <div class="relative z-10 flex flex-col items-center gap-2">
-                    <div class="h-14 w-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-lg <%= current.status === 'completed' ? 'bg-emerald-600 text-white shadow-emerald-200' : 'bg-white text-slate-400' %>">
-                        ✅
+                <% } else { %>
+                    <div class="px-5 py-8 text-center">
+                        <p class="text-xs text-slate-400 font-medium">Belum ada jemputan aktif</p>
                     </div>
-                    <span class="text-xs font-black uppercase tracking-widest text-slate-700">Selesai</span>
-                </div>
-            </div>
-            
-            <p class="mt-8 text-sm font-bold text-slate-600 bg-white/50 py-3 px-6 rounded-2xl inline-block">
-                <% if (current.status === 'pending') { %>
-                    Admin sedang meninjau permintaan Anda. Harap tunggu!
-                <% } else if (current.status === 'on_the_way') { %>
-                    Siapkan sampah Anda! Petugas sedang dalam perjalanan.
                 <% } %>
-            </p>
-        </div>
-    <% } else { %>
-        <!-- Request Form -->
-        <div class="rounded-[2.5rem] bg-white border border-slate-100 p-8 shadow-xl">
-            <form action="/pickup/request" method="POST" class="space-y-6">
-                
-                <div class="grid md:grid-cols-2 gap-6">
-                    <div class="space-y-2">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Estimasi Berat Sampah</label>
-                        <select name="weight_estimate" class="w-full rounded-2xl border-none bg-slate-50 p-4 font-bold text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-emerald-500" required>
-                            <option value="">Pilih Estimasi Berat...</option>
-                            <option value="5-10 kg">5 - 10 kg</option>
-                            <option value="11-20 kg">11 - 20 kg</option>
-                            <option value=">20 kg">Lebih dari 20 kg</option>
-                        </select>
-                        <p class="text-[10px] font-bold text-rose-500 ml-2 mt-1">*Minimal penjemputan adalah 5kg.</p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Jenis Sampah (Pilih minimal 1)</label>
-                        <div class="flex flex-wrap gap-3">
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Plastik" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">🧴 Plastik</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Kertas" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">📄 Kertas</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Kardus" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">📦 Kardus</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Kaca" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">🍾 Kaca</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Logam" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">🥫 Logam</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Minyak Jelantah" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">🛢️ Minyak Jelantah</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Elektronik (E-Waste)" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">💻 Elektronik</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Organik" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">🍂 Organik</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Tekstil / Baju" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">👕 Tekstil</div>
-                            </label>
-                            <label class="cursor-pointer">
-                                <input type="checkbox" name="waste_types" value="Baterai (B3)" class="peer hidden">
-                                <div class="rounded-xl border-2 border-slate-100 bg-white px-4 py-3 font-bold text-slate-500 transition-all peer-checked:border-emerald-500 peer-checked:bg-emerald-50 peer-checked:text-emerald-700 hover:bg-slate-50">🔋 Baterai (B3)</div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="space-y-2">
-                    <label class="text-xs font-black uppercase tracking-widest text-slate-400 ml-2">Alamat Lengkap & Patokan</label>
-                    <textarea name="pickup_address" rows="3" placeholder="Contoh: Jl. Merdeka No. 45, rumah cat biru pagar hitam." class="w-full rounded-2xl border-none bg-slate-50 p-4 font-bold text-slate-900 shadow-sm outline-none focus:ring-2 focus:ring-emerald-500" required></textarea>
-                </div>
-
-                <button type="submit" class="w-full rounded-2xl bg-slate-900 py-4 text-center font-black text-white shadow-xl shadow-slate-200 transition-all hover:bg-slate-800 hover:scale-[1.02] active:scale-95">
-                    Kirim Permintaan Jemput
-                </button>
-            </form>
-        </div>
-    <% } %>
-
-    <!-- Past Pickups History -->
-    <% if (pastPickups && pastPickups.length > 0) { %>
-        <div class="mt-12">
-            <h3 class="text-lg font-black text-slate-800 mb-4">Riwayat Jemputan Selesai</h3>
-            <div class="space-y-3">
-                <% pastPickups.forEach(p => { %>
-                    <div class="flex items-center justify-between p-4 rounded-2xl bg-white border border-slate-100 shadow-sm">
-                        <div>
-                            <p class="font-bold text-slate-800"><%= p.waste_types %> (<%= p.weight_estimate %>)</p>
-                            <p class="text-xs text-slate-400"><%= new Date(p.pickup_date).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
-                        </div>
-                        <div class="h-8 w-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                            ✅
-                        </div>
-                    </div>
-                <% }) %>
             </div>
+
+            <!-- History Access -->
+            <a href="/pickup/history"
+                class="flex items-center justify-between gap-3 rounded-3xl bg-white border border-slate-100 px-5 py-4 shadow-sm hover:border-emerald-200 hover:shadow-md hover:bg-emerald-50/30 transition-all group">
+                <div class="flex items-center gap-3">
+                    <div class="h-9 w-9 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-base flex-shrink-0">📋</div>
+                    <div>
+                        <p class="text-sm font-black text-slate-800">Riwayat Selesai</p>
+                        <p class="text-[11px] text-slate-400 font-medium mt-0.5">Lihat arsip penjemputan</p>
+                    </div>
+                </div>
+                <svg class="h-4 w-4 text-slate-300 group-hover:text-emerald-500 transition flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                </svg>
+            </a>
+
         </div>
-    <% } %>
+    </div>
 </section>
+
+<script>
+const logsData = <%- JSON.stringify(pendingLogs || []) %>;
+
+const TYPE_COLOR = {
+    organic:'#16a34a', plastic:'#2563eb', paper:'#d97706',
+    metal:'#9333ea', glass:'#0891b2', electronic:'#dc2626'
+};
+
+function updateStats() {
+    const allCards    = document.querySelectorAll('.pending-log-card');
+    const checked     = document.querySelectorAll('input[name="selected_logs"]:checked');
+    const summaryBar  = document.getElementById('summary-bar');
+    const previewWrap = document.getElementById('preview-wrap');
+    const previewList = document.getElementById('preview-list');
+    const selCount    = document.getElementById('sel-count');
+    const selWeight   = document.getElementById('sel-weight');
+
+    // Style each card
+    allCards.forEach(card => {
+        const cb     = card.querySelector('input');
+        const cbBox  = card.querySelector('.custom-checkbox');
+        const cbSvg  = card.querySelector('.custom-svg');
+        const hb     = card.querySelector('.highlight-border');
+
+        if (cb.checked) {
+            card.classList.add('log-card-selected');
+            card.classList.remove('border-slate-100','bg-slate-50/50');
+            cbBox.style.cssText = 'border-color:#10b981;background:#10b981;';
+            cbSvg.style.opacity = '1';
+            hb.style.opacity    = '1';
+        } else {
+            card.classList.remove('log-card-selected');
+            card.classList.add('border-slate-100','bg-slate-50/50');
+            cbBox.style.cssText = '';
+            cbSvg.style.opacity = '0';
+            hb.style.opacity    = '0';
+        }
+    });
+
+    if (checked.length === 0) {
+        summaryBar.classList.add('hidden');
+        previewWrap.classList.add('hidden');
+        previewList.innerHTML = '';
+        return;
+    }
+
+    // Summary
+    summaryBar.classList.remove('hidden');
+    selCount.textContent = checked.length;
+    let totalW = 0;
+    let html   = '';
+
+    checked.forEach(cb => {
+        const logId = parseInt(cb.value);
+        const wt    = parseFloat(cb.closest('label').querySelector('[data-weight]').getAttribute('data-weight') || 0);
+        totalW += wt;
+
+        const log = logsData.find(l => l.id === logId);
+        if (!log) return;
+
+        const dateStr  = new Date(log.created_at).toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+        const itemsHtml = log.items.map(it => {
+            const c = TYPE_COLOR[it.waste_type] || '#64748b';
+            return `<div class="flex justify-between items-center text-[11px] py-1 border-b border-slate-50 last:border-0">
+                        <span class="flex items-center gap-1.5 text-slate-500">
+                            <span class="inline-block h-1.5 w-1.5 rounded-full" style="background:${c}"></span>
+                            ${it.waste_type}
+                        </span>
+                        <span class="font-bold text-slate-700">${it.weight}kg <span class="text-emerald-600 text-[9px]">+${it.points_earned}pts</span></span>
+                    </div>`;
+        }).join('');
+
+        const photoHtml = log.photo_url
+            ? `<img src="${log.photo_url}" class="w-full h-28 object-cover">`
+            : `<div class="w-full h-28 bg-slate-100 flex items-center justify-center text-slate-300 text-2xl">📦</div>`;
+
+        html += `
+            <div class="preview-enter rounded-2xl border border-slate-100 bg-white overflow-hidden shadow-sm">
+                ${photoHtml}
+                <div class="p-3 space-y-2">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-black text-slate-800">#${log.id}</p>
+                            <p class="text-[10px] text-slate-400">${dateStr}</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-xs font-black text-slate-700">${log.total_weight}kg</p>
+                            <p class="text-[10px] text-emerald-600 font-bold">+${log.total_points}</p>
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 rounded-xl p-2">${itemsHtml}</div>
+                </div>
+            </div>`;
+    });
+
+    selWeight.textContent  = totalW.toFixed(2);
+    previewList.innerHTML  = html;
+    previewWrap.classList.remove('hidden');
+}
+
+document.addEventListener('DOMContentLoaded', updateStats);
+</script>

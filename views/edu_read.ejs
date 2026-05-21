@@ -27,9 +27,8 @@
     <% } %>
 
     <!-- Article Content -->
-    <div class="prose prose-slate prose-lg max-w-none font-medium leading-loose text-slate-700">
-        <!-- We use whitespace-pre-wrap to respect newlines from the textarea -->
-        <div class="whitespace-pre-wrap"><%= article.content %></div>
+    <div class="prose prose-slate prose-lg prose-emerald max-w-none font-medium leading-loose text-slate-700 ql-editor-display">
+        <%- article.content %>
     </div>
 
     <!-- Share / Footer -->
