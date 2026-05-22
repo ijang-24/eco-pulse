@@ -298,49 +298,159 @@
 </section>
 
 <!-- Impact Card Modal -->
-<div id="impactCardModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4">
-    <div class="relative w-full max-w-md animate-in fade-in zoom-in duration-300">
-        <div id="captureArea" class="overflow-hidden rounded-[2.5rem] bg-white shadow-2xl">
-            <div class="bg-gradient-to-br from-emerald-600 via-emerald-500 to-lime-400 p-8 text-white">
+<!-- Impact Card Modal -->
+<div id="impactCardModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4">
+    <div class="relative w-full max-w-sm animate-in fade-in zoom-in duration-300">
+        <!-- Floating Close Button -->
+        <button onclick="closeImpactCard()" class="absolute -top-14 right-2 p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full backdrop-blur-md transition-all focus:outline-none focus:ring-2 focus:ring-emerald-400 active:scale-90 shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+
+        <!-- Redesigned Premium Sustainability Pass Card (Organic Light Theme) -->
+        <div id="captureArea" class="overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-white via-emerald-50/50 to-lime-50/30 p-6 text-slate-800 relative border border-emerald-200/50 shadow-2xl w-full mx-auto select-none">
+            <!-- Decorative Glow Rings -->
+            <div class="absolute -right-20 -top-20 h-52 w-52 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 h-48 w-48 rounded-full bg-lime-400/10 blur-3xl pointer-events-none"></div>
+            
+            <div class="relative space-y-5">
+                <!-- Card Header -->
                 <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <p class="text-sm font-black uppercase tracking-widest">Eco-Pulse</p>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-base">🌿</span>
+                        <span class="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-800">Eco-Pulse</span>
                     </div>
-                    <span class="rounded-full bg-white/20 px-3 py-1 text-[10px] font-bold uppercase tracking-widest">Community Hero</span>
+                    <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 text-[8px] font-black uppercase tracking-wider text-emerald-700 shadow-sm">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> VERIFIED IMPACT PASS
+                    </span>
                 </div>
-                <div class="mt-8">
-                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-emerald-100">Sustainability Impact</p>
-                    <h2 class="mt-1 text-3xl font-black tracking-tight"><%= user.username %></h2>
+
+                <!-- Profile & Citizen Details -->
+                <div class="flex items-center gap-4 pt-1">
+                    <div class="relative">
+                        <!-- Custom Premium Leaf / Avatar Badge -->
+                        <div class="w-14 h-14 rounded-full bg-gradient-to-tr from-emerald-400 to-lime-300 p-0.5 shadow-[0_4px_12px_rgba(16,185,129,0.15)] flex-shrink-0">
+                            <div class="w-full h-full rounded-full bg-white flex items-center justify-center">
+                                <span class="text-2xl"><%= level.icon %></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-1 overflow-hidden">
+                        <p class="text-[8px] font-black uppercase tracking-[0.2em] text-emerald-700/80">COMMUNITY HERO</p>
+                        <h2 class="text-2xl font-black tracking-tight text-slate-900 break-words leading-tight"><%= user.username %></h2>
+                        <p class="text-[9px] font-bold text-slate-500 tracking-wider break-words">RT <%= user.address_rt %> / RW <%= user.address_rw %> • ECO-CITIZEN</p>
+                    </div>
                 </div>
-            </div>
-            <div class="p-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-100">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Points Earned</p>
-                        <p class="mt-1 text-3xl font-black text-emerald-600 tracking-tighter"><%= user.total_points %></p>
+
+                <!-- Divider -->
+                <div class="relative flex py-1 items-center">
+                    <div class="flex-grow border-t border-emerald-500/15"></div>
+                    <span class="flex-shrink mx-3 text-[8px] font-black uppercase tracking-widest text-emerald-700/50">Achievements</span>
+                    <div class="flex-grow border-t border-emerald-500/15"></div>
+                </div>
+
+                <!-- Main Metrics Grid (Level & Points) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- Points -->
+                    <div class="rounded-2xl bg-white border border-emerald-100/80 p-4 relative overflow-hidden shadow-sm">
+                        <div class="absolute top-0 right-0 w-12 h-12 bg-emerald-500/5 rounded-bl-full pointer-events-none"></div>
+                        <p class="text-[8px] font-black uppercase tracking-wider text-emerald-700">Total Points</p>
+                        <p class="text-2xl font-black text-slate-900 mt-1 tracking-tight"><%= user.total_points || 0 %></p>
+                        <p class="text-[8px] font-bold text-emerald-600/70 mt-0.5 uppercase tracking-wide">Green Credits</p>
                     </div>
-                    <div class="rounded-3xl bg-slate-50 p-5 ring-1 ring-slate-100">
-                        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">Eco Rank</p>
-                        <p class="mt-1 text-xl font-black text-slate-900 tracking-tight"><%= level.name %></p>
+                    
+                    <!-- Eco Rank -->
+                    <div class="rounded-2xl bg-white border border-emerald-100/80 p-4 relative overflow-hidden shadow-sm">
+                        <div class="absolute top-0 right-0 w-12 h-12 bg-lime-500/5 rounded-bl-full pointer-events-none"></div>
+                        <p class="text-[8px] font-black uppercase tracking-wider text-emerald-800">Eco Rank</p>
+                        <p class="text-sm font-black text-emerald-600 mt-2.5 tracking-tight leading-snug break-words uppercase tracking-wide"><%= level.name %></p>
+                        <p class="text-[8px] font-bold text-slate-400 mt-1 uppercase tracking-wide">Level Badge</p>
                     </div>
+                </div>
+
+                <!-- Environmental Impact Grid (2x2) -->
+                <div class="grid grid-cols-2 gap-3">
+                    <!-- CO2 Saved -->
+                    <div class="rounded-xl bg-white border border-orange-100/60 p-3 flex items-center gap-3 shadow-sm">
+                        <div class="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-600 flex-shrink-0">
+                            <!-- Lightning / Energy reduction SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[8px] font-extrabold uppercase tracking-wide text-slate-500">CO₂ Saved</p>
+                            <p class="text-sm font-black text-orange-600 mt-0.5 tracking-tight truncate"><%= impact.co2 %> <span class="text-[9px] font-medium text-slate-400">kg</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Trees Saved -->
+                    <div class="rounded-xl bg-white border border-emerald-100/60 p-3 flex items-center gap-3 shadow-sm">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-600 flex-shrink-0">
+                            <!-- Trees SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-7.714 2.143L11 21l-2.286-6.857L1 12l7.714-2.143L11 3z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[8px] font-extrabold uppercase tracking-wide text-slate-500">Trees Saved</p>
+                            <p class="text-sm font-black text-emerald-700 mt-0.5 tracking-tight truncate"><%= impact.trees %> <span class="text-[9px] font-medium text-slate-400">Pohon</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Energy Saved -->
+                    <div class="rounded-xl bg-white border border-yellow-100/60 p-3 flex items-center gap-3 shadow-sm">
+                        <div class="w-8 h-8 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400 flex-shrink-0">
+                            <!-- Lightbulb SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.989-2.386l-.548-.547z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[8px] font-extrabold uppercase tracking-wide text-slate-500">Energy Saved</p>
+                            <p class="text-sm font-black text-yellow-600 mt-0.5 tracking-tight truncate"><%= impact.energySaved %> <span class="text-[9px] font-medium text-slate-400">kWh</span></p>
+                        </div>
+                    </div>
+
+                    <!-- Water Saved -->
+                    <div class="rounded-xl bg-white border border-blue-100/60 p-3 flex items-center gap-3 shadow-sm">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 flex-shrink-0">
+                            <!-- Water Drops SVG -->
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                            </svg>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[8px] font-extrabold uppercase tracking-wide text-slate-500">Water Saved</p>
+                            <p class="text-sm font-black text-blue-600 mt-0.5 tracking-tight truncate"><%= impact.waterSaved %> <span class="text-[9px] font-medium text-slate-400">L</span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Branding -->
+                <div class="flex justify-between items-center text-[7px] font-black tracking-widest text-slate-400 uppercase pointer-events-none pt-1">
+                    <span>Eco-Pulse Sustainability Network</span>
+                    <span>© <%= new Date().getFullYear() %></span>
                 </div>
             </div>
         </div>
-        <div class="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button onclick="shareImpact()" class="flex items-center justify-center gap-2 rounded-2xl bg-white py-4 text-sm font-bold text-slate-600 shadow-xl transition hover:bg-slate-50 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+        
+        <!-- Premium and Perfectly Proportioned Action Row -->
+        <div class="mt-4 grid grid-cols-2 gap-3 w-full mx-auto">
+            <button id="btnShareText" onclick="copyAndShareText(event)" class="group flex items-center justify-center gap-2 rounded-2xl bg-white/10 hover:bg-white/15 text-white border border-white/10 py-3 px-4 text-xs font-extrabold shadow-lg backdrop-blur-md transition-all duration-300 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-400 group-hover:scale-110 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
                 </svg>
-                Share Text
+                <span>Salin Teks</span>
             </button>
-            <button onclick="downloadCard()" class="flex items-center justify-center gap-2 rounded-2xl bg-emerald-600 py-4 text-sm font-bold text-white shadow-xl shadow-emerald-200 transition hover:bg-emerald-700 active:scale-95">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <button onclick="downloadCard(event)" class="group flex items-center justify-center gap-2 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 py-3 px-4 text-xs font-extrabold shadow-lg shadow-emerald-500/10 transition-all duration-300 active:scale-95">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-950 group-hover:translate-y-0.5 transition-transform flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Download PNG
+                <span>Unduh PNG</span>
             </button>
         </div>
-        <button onclick="closeImpactCard()" class="mt-3 w-full py-2 text-xs font-bold text-white/50 hover:text-white transition">Tutup</button>
     </div>
 </div>
 
@@ -358,21 +468,63 @@ function closeImpactCard() {
     document.body.style.overflow = 'auto';
 }
 
-async function shareImpact() {
-    const shareText = `Saya telah berkontribusi di Eco-Pulse! 🌿\n\n🎯 Total Poin: <%= user.total_points %>\n🏆 Peringkat: <%= level.name %>\n🌍 Dampak: Menyelamatkan <%= impact.trees %> pohon!\n\nMari jaga lingkungan bersama di RT <%= user.address_rt %> / RW <%= user.address_rw %>! #EcoPulse #GreenLife`;
-    
-    if (navigator.share) {
-        try {
-            await navigator.share({
-                title: 'Eco-Pulse Impact',
-                text: shareText,
-                url: window.location.origin
-            });
-        } catch (err) {
-            copyImpactText(shareText);
+async function copyAndShareText(event) {
+    const btn = document.getElementById('btnShareText');
+    const originalContent = btn.innerHTML;
+    const shareText = `Saya telah berkontribusi di Eco-Pulse! 🌿\n\nSustainability Impact Saya:\n🎯 Total Poin: <%= user.total_points %>\n🏆 Eco Rank: <%= level.name %>\n⚡ CO2 Reduced: <%= impact.co2 %> kg\n🌳 Trees Saved: <%= impact.trees %> Pohon\n💡 Energy Saved: <%= impact.energySaved %> kWh\n💧 Water Saved: <%= impact.waterSaved %> Liter\n\nMari jaga lingkungan bersama di RT <%= user.address_rt %> / RW <%= user.address_rw %>! #EcoPulse #GreenLife`;
+
+    try {
+        // Copy to clipboard immediately
+        await navigator.clipboard.writeText(shareText);
+        
+        // Visual Success Feedback on Button
+        btn.classList.remove('bg-white/10', 'hover:bg-white/15', 'text-white', 'border-white/10');
+        btn.classList.add('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>Tersalin!</span>
+        `;
+        
+        // SweetAlert Toast Notification
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: 'Teks dampak berhasil disalin!',
+            showConfirmButton: false,
+            timer: 2500,
+            customClass: {
+                popup: 'rounded-2xl'
+            }
+        });
+
+        // Trigger native sharing on mobile if available
+        if (navigator.share) {
+            setTimeout(async () => {
+                try {
+                    await navigator.share({
+                        title: 'Eco-Pulse Impact',
+                        text: shareText,
+                        url: window.location.origin
+                    });
+                } catch (e) {
+                    console.log('Native share canceled or failed');
+                }
+            }, 300);
         }
-    } else {
-        copyImpactText(shareText);
+        
+    } catch (err) {
+        console.error('Failed to copy text: ', err);
+        Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal menyalin teks dampak.' });
+    } finally {
+        // Restore button state after 2.5 seconds
+        setTimeout(() => {
+            btn.classList.remove('bg-emerald-500/20', 'text-emerald-400', 'border-emerald-500/30');
+            btn.classList.add('bg-white/10', 'hover:bg-white/15', 'text-white', 'border-white/10');
+            btn.innerHTML = originalContent;
+        }, 2500);
     }
 }
 
@@ -389,13 +541,19 @@ function copyImpactText(text) {
     });
 }
 
-async function downloadCard() {
+async function downloadCard(event) {
     const captureArea = document.getElementById('captureArea');
     const btn = event.currentTarget;
-    const originalText = btn.innerText;
+    const originalContent = btn.innerHTML;
     
     btn.disabled = true;
-    btn.innerText = 'Generating...';
+    btn.innerHTML = `
+        <svg class="animate-spin -ml-1 h-4 w-4 text-white inline-block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="ml-2">Generating...</span>
+    `;
 
     try {
         const canvas = await html2canvas(captureArea, {
@@ -420,7 +578,7 @@ async function downloadCard() {
         Swal.fire({ icon: 'error', title: 'Gagal', text: 'Gagal mengunduh kartu.' });
     } finally {
         btn.disabled = false;
-        btn.innerText = originalText;
+        btn.innerHTML = originalContent;
     }
 }
 </script>
