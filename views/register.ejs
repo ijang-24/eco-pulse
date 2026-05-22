@@ -22,7 +22,7 @@
         <div class="border-b border-slate-100 pb-6">
             <p class="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-600">Create Account</p>
             <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Join the Eco-Pulse community</h2>
-            <p class="mt-3 text-sm leading-6 text-slate-500">Lengkapi data berikut untuk membuat akun warga atau admin komunitas.</p>
+            <p class="mt-3 text-sm leading-6 text-slate-500">Lengkapi data berikut untuk membuat akun warga.</p>
         </div>
 
         <form action="/register" method="POST" enctype="multipart/form-data" class="mt-8 grid gap-5 md:grid-cols-2">
@@ -56,15 +56,9 @@
                 <input type="text" name="rw" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100" placeholder="02" required>
             </div>
 
-            <div class="space-y-2">
-                <label class="block text-sm font-semibold text-slate-700">Join As</label>
-                <select name="role" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100">
-                    <option value="citizen">Citizen (Warga)</option>
-                    <option value="admin">Admin (Pengurus)</option>
-                </select>
-            </div>
 
-            <div class="space-y-2">
+
+            <div class="space-y-2 md:col-span-2">
                 <label class="block text-sm font-semibold text-slate-700">Password</label>
                 <input type="password" name="password" class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-slate-800 transition focus:border-emerald-500 focus:bg-white focus:outline-none focus:ring-4 focus:ring-emerald-100" placeholder="Minimum 8 characters" required>
             </div>

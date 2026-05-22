@@ -36,7 +36,7 @@ const upload = multer({ storage: storage });
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const ALLOWED_ROLES = new Set(['citizen', 'admin']);
+const ALLOWED_ROLES = new Set(['citizen']); // 'admin' dihapus — role hanya bisa diubah langsung di DB
 
 const createSessionUser = (user) => ({
     id: user.id,
@@ -842,7 +842,7 @@ app.post('/register', isGuest, upload.single('kk_photo'), async (req, res) => {
     const kk_number = normalizeText(req.body.kk_number);
     const rt = normalizeText(req.body.rt);
     const rw = normalizeText(req.body.rw);
-    const role = ALLOWED_ROLES.has(req.body.role) ? req.body.role : 'citizen';
+    const role = 'citizen'; // Selalu citizen — tidak pernah dari req.body
     const kk_photo_url = req.file ? (process.env.VERCEL ? null : `/uploads/${req.file.filename}`) : null;
 
     if (!username || !email || !password || !nik || !kk_number || !rt || !rw || !req.file) {
